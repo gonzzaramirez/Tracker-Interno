@@ -21,3 +21,17 @@ export function daysFromNow(days: number): string {
   date.setDate(date.getDate() + days)
   return isoDate(date)
 }
+
+/** All ISO dates inside an inclusive [start, end] range. */
+export function eachDateInRange(start: string, end: string): string[] {
+  const [startYear, startMonth, startDay] = start.split("-").map(Number)
+  const [endYear, endMonth, endDay] = end.split("-").map(Number)
+  const cursor = new Date(startYear, startMonth - 1, startDay)
+  const last = new Date(endYear, endMonth - 1, endDay)
+  const dates: string[] = []
+  while (cursor <= last) {
+    dates.push(isoDate(cursor))
+    cursor.setDate(cursor.getDate() + 1)
+  }
+  return dates
+}

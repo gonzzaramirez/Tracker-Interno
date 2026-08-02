@@ -1,0 +1,120 @@
+"use client"
+
+import { useRef, useState, useTransition } from "react"
+import { Loader2Icon } from "lucide-react"
+import { toast } from "sonner"
+
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { requestTimeOffAction } from "@/lib/actions/timeoff"
+import type { Member, TimeOffType } from "@/lib/domain"
+
+type TimeOffFormProps = {
+  members: Member[]
+}
+
+const TYPES: Array<{ value: TimeOffType; label: string }> = [
+  { value: "vacation", label: "Vacation" },
+  { value: "recess", label: "Recovery" },
+  { value: "other", label: "Other" },
+]
+
+/**
+ * Time-off request form (REQ-TO-003): member, inclusive date range and type
+ * go through a Server Action.
+ */
+export function TimeOffForm({ members }: TimeOffFormProps) {
+  const [memberId, setMemberId] = useState(members[0]?.id ?? "")
+  const [type, setType] = useState<TimeOffType>("vacation")
+  const [isPending, startTransition] = useTransition()
+  const formRef = useRef<HTMLFormElement>(null)
+
+  function submit(formData: FormData) {
+    startTransition(async () => {
+      const result = await requestTimeOffAction({
+        memberId,
+        type,
+        startDate: String(formData.get("start") ?? ""),
+        endDate: String(formData.get("end") ?? ""),
+        note: String(formData.get("note") ?? "") || undefined,
+      })
+      if (result.ok) {
+        toast.success("Time off requested")
+        formRef.current?.reset()
+        setType("vacation")
+      } else {
+        toast.error(result.error)
+      }
+    })
+  }
+
+  return (
+    <form ref={formRef} action={submit} className="grid gap-4">
+      <div className="flex flex-col gap-1.5">
+        <Select value={memberId} onValueChange={(value) => setMemberId(value ?? "")}>
+          <SelectTrigger className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {members.map((member) => (
+              <SelectItem key={member.id} value={member.id}>
+                {member.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="timeoff-start" className="text-sm leading-none font-medium select-none">
+            Start
+          </label>
+          <Input id="timeoff-start" name="start" type="date" required />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="timeoff-end" className="text-sm leading-none font-medium select-none">
+            End
+          </label>
+          <Input id="timeoff-end" name="end" type="date" required />
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <Select
+          value={type}
+          onValueChange={(value) => setType((value as TimeOffType) ?? "vacation")}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {TYPES.map((item) => (
+              <SelectItem key={item.value} value={item.value}>
+                {item.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <Input name="note" placeholder="Note (optional)" />
+      </div>
+
+      <div>
+        <Button type="submit" disabled={isPending || !memberId}>
+          {isPending ? <Loader2Icon className="size-4 animate-spin" /> : null}
+          Request time off
+        </Button>
+      </div>
+    </form>
+  )
+}
