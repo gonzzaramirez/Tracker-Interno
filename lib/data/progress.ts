@@ -23,9 +23,17 @@ export async function listProgressByTasks(taskIds: string[]): Promise<ProgressRe
   return getDb().progress.filter((record) => wanted.has(record.taskId))
 }
 
-export async function insertProgressRecord(record: ProgressRecord): Promise<ProgressRecord> {
+export async function insertProgressRecord(
+  input: Omit<ProgressRecord, "id">
+): Promise<ProgressRecord> {
   await delay()
-  getDb().progress.push(record)
+  const db = getDb()
+  const record: ProgressRecord = {
+    ...input,
+    id: `pr-${db.counters.progress}`,
+  }
+  db.counters.progress += 1
+  db.progress.push(record)
   return record
 }
 

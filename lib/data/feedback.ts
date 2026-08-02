@@ -6,6 +6,7 @@ import type { Feedback } from "@/lib/domain"
 
 import { getDb } from "./store"
 import { delay } from "./delay"
+import { todayISO } from "./date"
 
 export async function listFeedback(): Promise<Feedback[]> {
   await delay()
@@ -17,8 +18,17 @@ export async function listFeedbackByMember(memberId: string): Promise<Feedback[]
   return getDb().feedback.filter((feedback) => feedback.memberId === memberId)
 }
 
-export async function insertFeedback(feedback: Feedback): Promise<Feedback> {
+export async function insertFeedback(
+  input: Omit<Feedback, "id" | "date">
+): Promise<Feedback> {
   await delay()
-  getDb().feedback.push(feedback)
+  const db = getDb()
+  const feedback: Feedback = {
+    ...input,
+    id: `fb-${db.counters.feedback}`,
+    date: todayISO(),
+  }
+  db.counters.feedback += 1
+  db.feedback.push(feedback)
   return feedback
 }

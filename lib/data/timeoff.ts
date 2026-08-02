@@ -17,8 +17,14 @@ export async function listTimeOffByMember(memberId: string): Promise<TimeOffEntr
   return getDb().timeOff.filter((entry) => entry.memberId === memberId)
 }
 
-export async function insertTimeOff(entry: TimeOffEntry): Promise<TimeOffEntry> {
+export async function insertTimeOff(input: Omit<TimeOffEntry, "id">): Promise<TimeOffEntry> {
   await delay()
-  getDb().timeOff.push(entry)
+  const db = getDb()
+  const entry: TimeOffEntry = {
+    ...input,
+    id: `to-${db.counters.timeoff}`,
+  }
+  db.counters.timeoff += 1
+  db.timeOff.push(entry)
   return entry
 }

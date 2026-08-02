@@ -6,15 +6,25 @@ import type { Snippet } from "@/lib/domain"
 
 import { getDb } from "./store"
 import { delay } from "./delay"
+import { todayISO } from "./date"
 
 export async function listSnippets(): Promise<Snippet[]> {
   await delay()
   return [...getDb().snippets]
 }
 
-export async function insertSnippet(snippet: Snippet): Promise<Snippet> {
+export async function insertSnippet(
+  input: Omit<Snippet, "id" | "usageCount" | "lastUsedAt">
+): Promise<Snippet> {
   await delay()
-  getDb().snippets.push(snippet)
+  const db = getDb()
+  const snippet: Snippet = {
+    ...input,
+    id: `sn-${db.counters.snippet}`,
+    usageCount: 0,
+  }
+  db.counters.snippet += 1
+  db.snippets.push(snippet)
   return snippet
 }
 
@@ -26,14 +36,10 @@ export async function touchSnippet(id: string): Promise<Snippet | undefined> {
   if (index === -1) {
     return undefined
   }
-  const now = new Date()
-  const year = now.getFullYear()
-  const month = String(now.getMonth() + 1).padStart(2, "0")
-  const day = String(now.getDate()).padStart(2, "0")
   db.snippets[index] = {
     ...db.snippets[index],
     usageCount: db.snippets[index].usageCount + 1,
-    lastUsedAt: `${year}-${month}-${day}`,
+    lastUsedAt: todayISO(),
   }
   return db.snippets[index]
 }

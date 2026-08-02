@@ -6,6 +6,7 @@ import type { Task } from "@/lib/domain"
 
 import { getDb } from "./store"
 import { delay } from "./delay"
+import { todayISO } from "./date"
 
 export async function listTasks(): Promise<Task[]> {
   await delay()
@@ -22,9 +23,18 @@ export async function getTaskById(id: string): Promise<Task | undefined> {
   return getDb().tasks.find((task) => task.id === id)
 }
 
-export async function insertTask(task: Task): Promise<Task> {
+export async function insertTask(
+  input: Omit<Task, "id" | "createdAt">
+): Promise<Task> {
   await delay()
-  getDb().tasks.push(task)
+  const db = getDb()
+  const task: Task = {
+    ...input,
+    id: `task-${db.counters.task}`,
+    createdAt: todayISO(),
+  }
+  db.counters.task += 1
+  db.tasks.push(task)
   return task
 }
 
