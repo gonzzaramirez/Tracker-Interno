@@ -39,9 +39,13 @@ function SnippetCard({ snippet }: SnippetCardProps) {
       setCopied(true)
       window.setTimeout(() => setCopied(false), 1600)
       startTransition(async () => {
-        await markSnippetUsedAction(snippet.id)
+        const result = await markSnippetUsedAction(snippet.id)
+        if (!result.ok) {
+          toast.error(`Copied, but usage tracking failed: ${result.error}`)
+          return
+        }
+        toast.success("Copied to clipboard")
       })
-      toast.success("Copied to clipboard")
     } catch {
       toast.error("Could not copy — clipboard unavailable")
     }

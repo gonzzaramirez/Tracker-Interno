@@ -118,7 +118,7 @@ export function FeedbackForm({ members }: FeedbackFormProps) {
 
       <div>
         <Button type="submit" disabled={isPending || rating === 0 || !memberId}>
-          {isPending ? <Loader2Icon className="size-4 animate-spin" /> : null}
+          {isPending ? <Loader2Icon className="size-4 motion-safe:animate-spin motion-reduce:animate-none" aria-hidden /> : null}
           Save feedback
         </Button>
       </div>

@@ -51,6 +51,7 @@ export function AppNav() {
               <Link
                 key={item.href}
                 href={item.href}
+                aria-label={item.label}
                 aria-current={active ? "page" : undefined}
                 className={cn(
                   "flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",

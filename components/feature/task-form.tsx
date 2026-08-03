@@ -164,7 +164,7 @@ export function TaskForm({ members, task, onClose }: TaskFormProps) {
       <div className="flex items-center gap-2 sm:col-span-2">
         <Button type="submit" disabled={isPending || !memberId}>
           {isPending ? (
-            <Loader2Icon className="size-4 animate-spin" />
+            <Loader2Icon className="size-4 motion-safe:animate-spin motion-reduce:animate-none" aria-hidden />
           ) : task ? (
             "Save changes"
           ) : (

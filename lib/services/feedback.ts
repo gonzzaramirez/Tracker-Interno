@@ -31,6 +31,12 @@ export async function getByMember(memberId: string): Promise<Feedback[]> {
     if (a.date !== b.date) {
       return b.date.localeCompare(a.date)
     }
+    if (a.createdAt !== b.createdAt) {
+      return b.createdAt.localeCompare(a.createdAt)
+    }
+    if (a.createdSequence !== b.createdSequence) {
+      return b.createdSequence - a.createdSequence
+    }
     return b.id.localeCompare(a.id)
   })
 }

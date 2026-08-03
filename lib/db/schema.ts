@@ -58,6 +58,8 @@ export type ProgressRow = {
   value: number
   progress_date: string
   note: string | null
+  created_at: string
+  created_sequence: number
 }
 
 export type FeedbackRow = {
@@ -67,6 +69,7 @@ export type FeedbackRow = {
   content: string
   category: FeedbackCategory
   created_at: string
+  created_sequence: number
 }
 
 export type SnippetRow = {
@@ -77,6 +80,7 @@ export type SnippetRow = {
   usage_count: number
   last_used_at: string | null
   created_at: string
+  created_sequence: number
 }
 
 export type TimeOffRow = {

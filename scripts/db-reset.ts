@@ -10,7 +10,10 @@ for (const suffix of ["", "-wal", "-shm"]) {
 }
 
 mkdirSync(DB_DIR, { recursive: true })
-const db = new DatabaseSync(DB_PATH)
+const db = new DatabaseSync(DB_PATH, {
+  enableForeignKeyConstraints: true,
+  timeout: 5000,
+})
 db.exec("PRAGMA journal_mode = WAL")
 db.exec("PRAGMA foreign_keys = ON")
 

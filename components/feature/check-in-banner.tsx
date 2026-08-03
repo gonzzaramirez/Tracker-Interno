@@ -9,8 +9,15 @@ import { AppleCard, AppleCardHeader, AppleCardTitle } from "@/components/feature
 import { SemaphorePill } from "@/components/feature/semaphore-pill"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { completeCheckInAction } from "@/lib/actions/checkins"
-import type { CheckInReminder } from "@/lib/domain"
+import type { CheckInReminder, Semaphore } from "@/lib/domain"
 import { cn } from "@/lib/utils"
 
 function formatDueDate(dateISO: string): string {
@@ -21,11 +28,18 @@ function formatDueDate(dateISO: string): string {
   })
 }
 
+const SEMAPHORE_OPTIONS: Array<{ value: Semaphore; label: string }> = [
+  { value: "green", label: "Green" },
+  { value: "yellow", label: "Yellow" },
+  { value: "red", label: "Red" },
+]
+
 /** In-app reminder for members whose scheduled check-in is due. */
 export function CheckInBanner({ reminders }: { reminders: CheckInReminder[] }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [notes, setNotes] = useState<Record<string, string>>({})
+  const [semaphores, setSemaphores] = useState<Record<string, Semaphore>>({})
 
   if (reminders.length === 0) {
     return null
@@ -36,7 +50,7 @@ export function CheckInBanner({ reminders }: { reminders: CheckInReminder[] }) {
       const result = await completeCheckInAction({
         memberId,
         note: notes[memberId]?.trim() || undefined,
-        semaphore: "green",
+        semaphore: semaphores[memberId] ?? "green",
       })
       if (!result.ok) {
         toast.error(result.error)
@@ -44,6 +58,11 @@ export function CheckInBanner({ reminders }: { reminders: CheckInReminder[] }) {
       }
       toast.success(`Check-in completed for ${memberName}`)
       setNotes((current) => {
+        const next = { ...current }
+        delete next[memberId]
+        return next
+      })
+      setSemaphores((current) => {
         const next = { ...current }
         delete next[memberId]
         return next
@@ -102,6 +121,29 @@ export function CheckInBanner({ reminders }: { reminders: CheckInReminder[] }) {
               {state === "overdue" ? "Overdue" : "Due"}
             </span>
             <SemaphorePill semaphore={lastSemaphore} />
+            <Select
+              value={semaphores[member.id] ?? "green"}
+              onValueChange={(value) => {
+                if (value === "green" || value === "yellow" || value === "red") {
+                  setSemaphores((current) => ({ ...current, [member.id]: value }))
+                }
+              }}
+            >
+              <SelectTrigger
+                size="sm"
+                aria-label={`Semaphore for ${member.name}`}
+                disabled={isPending}
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {SEMAPHORE_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Input
               name={`check-in-note-${member.id}`}
               value={notes[member.id] ?? ""}
@@ -121,7 +163,7 @@ export function CheckInBanner({ reminders }: { reminders: CheckInReminder[] }) {
               aria-label={`Mark check-in done for ${member.name}`}
               onClick={() => markDone(member.id, member.name)}
             >
-              {isPending ? <Loader2Icon className="animate-spin" aria-hidden /> : <CheckCircle2Icon aria-hidden />}
+              {isPending ? <Loader2Icon className="motion-safe:animate-spin motion-reduce:animate-none" aria-hidden /> : <CheckCircle2Icon aria-hidden />}
               Mark done
             </Button>
           </li>

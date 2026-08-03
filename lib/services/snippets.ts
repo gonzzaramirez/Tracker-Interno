@@ -14,13 +14,9 @@ export type CreateSnippetInput = {
 }
 
 export async function getSnippets(): Promise<Snippet[]> {
-  const snippets = await readSnippets()
-  return [...snippets].sort((a, b) => {
-    if (a.usageCount !== b.usageCount) {
-      return b.usageCount - a.usageCount
-    }
-    return (b.lastUsedAt ?? "").localeCompare(a.lastUsedAt ?? "")
-  })
+  // The repository orders by the persistent creation timestamp/sequence so a
+  // newly created snippet appears first, as required by SL-003.
+  return [...(await readSnippets())]
 }
 
 export async function getUsedSnippets(): Promise<Snippet[]> {

@@ -534,40 +534,45 @@ export function seedIfEmpty(db: DatabaseSync): boolean {
     }
 
     const insertProgress = db.prepare(
-      `INSERT INTO task_progress (id, task_id, value, progress_date, note)
-       VALUES (?, ?, ?, ?, ?)`,
+      `INSERT INTO task_progress
+       (id, task_id, value, progress_date, note, created_at, created_sequence)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
     )
-    for (const progress of PROGRESS) {
+    for (const [index, progress] of PROGRESS.entries()) {
       insertProgress.run(
         progress.id,
         progress.taskId,
         progress.value,
         progress.date,
         progress.note ?? null,
+        `${progress.date}T00:00:00.000Z`,
+        index + 1,
       )
     }
 
     const insertFeedback = db.prepare(
-      `INSERT INTO feedback (id, member_id, rating, content, category, created_at)
-       VALUES (?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO feedback
+       (id, member_id, rating, content, category, created_at, created_sequence)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
     )
-    for (const feedback of FEEDBACK) {
+    for (const [index, feedback] of FEEDBACK.entries()) {
       insertFeedback.run(
         feedback.id,
         feedback.memberId,
         feedback.rating,
         feedback.content,
         feedback.category,
-        feedback.createdAt,
+        `${feedback.createdAt}T00:00:00.000Z`,
+        index + 1,
       )
     }
 
     const insertSnippet = db.prepare(
       `INSERT INTO snippets
-       (id, title, description, content, usage_count, last_used_at, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+       (id, title, description, content, usage_count, last_used_at, created_at, created_sequence)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     )
-    for (const snippet of SNIPPETS) {
+    for (const [index, snippet] of SNIPPETS.entries()) {
       insertSnippet.run(
         snippet.id,
         snippet.title,
@@ -575,7 +580,8 @@ export function seedIfEmpty(db: DatabaseSync): boolean {
         snippet.content,
         snippet.usageCount,
         snippet.lastUsedAt ?? null,
-        snippet.createdAt,
+        `${snippet.createdAt}T00:00:00.000Z`,
+        index + 1,
       )
     }
 

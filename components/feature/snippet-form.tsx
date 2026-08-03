@@ -67,7 +67,7 @@ export function SnippetForm() {
       </div>
       <div>
         <Button type="submit" disabled={isPending || !title.trim()}>
-          {isPending ? <Loader2Icon className="size-4 animate-spin" /> : null}
+          {isPending ? <Loader2Icon className="size-4 motion-safe:animate-spin motion-reduce:animate-none" aria-hidden /> : null}
           Add snippet
         </Button>
       </div>

@@ -2,8 +2,16 @@
 
 import { cache } from "react"
 
-import type { ProgressRecord, Task, TaskPriority, TaskStatus, TaskWithProgress } from "@/lib/domain"
-import { todayISO } from "@/lib/domain/date"
+import {
+  TASK_PRIORITIES,
+  TASK_STATUSES,
+  type ProgressRecord,
+  type Task,
+  type TaskPriority,
+  type TaskStatus,
+  type TaskWithProgress,
+} from "@/lib/domain"
+import { isISODate, todayISO } from "@/lib/domain/date"
 import {
   getTaskById,
   insertTask,
@@ -12,6 +20,7 @@ import {
   updateTaskById,
 } from "@/lib/db/repos/tasks"
 import { insertProgressRecord, listProgressByTasks } from "@/lib/db/repos/progress"
+import { getMemberById } from "@/lib/db/repos/members"
 
 export type { TaskWithProgress } from "@/lib/domain"
 
@@ -48,6 +57,24 @@ function assertTitle(title: string): void {
   }
 }
 
+function assertPriority(priority: unknown): asserts priority is TaskPriority {
+  if (!TASK_PRIORITIES.includes(priority as TaskPriority)) {
+    throw new Error("Task priority is invalid.")
+  }
+}
+
+function assertStatus(status: unknown): asserts status is TaskStatus {
+  if (!TASK_STATUSES.includes(status as TaskStatus)) {
+    throw new Error("Task status is invalid.")
+  }
+}
+
+function assertDueDate(dueDate: string | null | undefined): void {
+  if (dueDate !== undefined && dueDate !== null && !isISODate(dueDate)) {
+    throw new Error("Due date must use the YYYY-MM-DD format.")
+  }
+}
+
 function clampProgress(value: number): number {
   if (!Number.isFinite(value)) {
     throw new Error("Progress must be a number between 0 and 100.")
@@ -63,6 +90,12 @@ function latestValue(records: ProgressRecord[]): number {
     if (a.date !== b.date) {
       return a.date.localeCompare(b.date)
     }
+    if (a.createdAt !== b.createdAt) {
+      return a.createdAt.localeCompare(b.createdAt)
+    }
+    if (a.createdSequence !== b.createdSequence) {
+      return a.createdSequence - b.createdSequence
+    }
     return a.id.localeCompare(b.id)
   })
   return sorted[sorted.length - 1].value
@@ -71,6 +104,12 @@ function latestValue(records: ProgressRecord[]): number {
 function byDateAsc(a: ProgressRecord, b: ProgressRecord): number {
   if (a.date !== b.date) {
     return a.date.localeCompare(b.date)
+  }
+  if (a.createdAt !== b.createdAt) {
+    return a.createdAt.localeCompare(b.createdAt)
+  }
+  if (a.createdSequence !== b.createdSequence) {
+    return a.createdSequence - b.createdSequence
   }
   return a.id.localeCompare(b.id)
 }
@@ -111,7 +150,15 @@ export async function getTasksWithProgressByMember(memberId: string): Promise<Ta
 }
 
 export async function createTask(input: CreateTaskInput): Promise<Task> {
+  if (!input.memberId) {
+    throw new Error("A member is required.")
+  }
+  if (!(await getMemberById(input.memberId))) {
+    throw new Error("The selected member does not exist.")
+  }
   assertTitle(input.title)
+  assertPriority(input.priority)
+  assertDueDate(input.dueDate)
   return insertTask({
     memberId: input.memberId,
     title: input.title.trim(),
@@ -123,9 +170,19 @@ export async function createTask(input: CreateTaskInput): Promise<Task> {
 }
 
 export async function updateTask(id: string, patch: UpdateTaskInput): Promise<Task> {
+  if (!id) {
+    throw new Error("A task is required.")
+  }
   if (patch.title !== undefined) {
     assertTitle(patch.title)
   }
+  if (patch.priority !== undefined) {
+    assertPriority(patch.priority)
+  }
+  if (patch.status !== undefined) {
+    assertStatus(patch.status)
+  }
+  assertDueDate(patch.dueDate)
   const updated = await updateTaskById(id, {
     ...patch,
     title: patch.title === undefined ? undefined : patch.title.trim(),
@@ -135,6 +192,7 @@ export async function updateTask(id: string, patch: UpdateTaskInput): Promise<Ta
 }
 
 export async function transitionStatus(id: string, status: TaskStatus): Promise<Task> {
+  assertStatus(status)
   const updated = await updateTaskById(id, { status })
   assertTaskFound(updated, id)
   return updated

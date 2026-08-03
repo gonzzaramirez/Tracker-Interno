@@ -21,6 +21,13 @@ const TYPE_DOT_CLASSES: Record<TimeOffEntry["type"], string> = {
   holiday: "bg-timeoff-holiday",
 }
 
+const TYPE_LABELS: Record<TimeOffEntry["type"], string> = {
+  vacation: "Vacation",
+  license: "License",
+  sickness: "Sickness",
+  holiday: "Holiday",
+}
+
 type CalendarDayContext = {
   approvedByDate: Record<string, TimeOffEntry[]>
   pendingByDate: Record<string, TimeOffEntry[]>
@@ -39,13 +46,25 @@ function isCurrentWeek(date: Date): boolean {
 
 /** Stable module-scope DayPicker v10 button; data arrives through context. */
 function CalendarDayButton(props: DayButtonProps) {
-  const { day, ...rest } = props
+  const { day, modifiers, ...rest } = props
   const context = useContext(CalendarDayContext)
   const approved = context?.approvedByDate[day.isoDate] ?? []
   const pending = context?.pendingByDate[day.isoDate] ?? []
   const memberNames = context?.memberNames ?? {}
   const approvedNames = approved.map((entry) => memberNames[entry.memberId] ?? "Unknown")
   const pendingNames = pending.map((entry) => memberNames[entry.memberId] ?? "Unknown")
+  const approvedDetails = approved.map(
+    (entry, index) => `${TYPE_LABELS[entry.type]} approved for ${approvedNames[index]}`,
+  )
+  const pendingDetails = pending.map(
+    (entry, index) => `${TYPE_LABELS[entry.type]} pending for ${pendingNames[index]}`,
+  )
+  const dateLabel = `${new Intl.DateTimeFormat("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  }).format(day.date)}${modifiers.today ? ", today" : ""}`
+  const accessibleLabel = [dateLabel, ...approvedDetails, ...pendingDetails].join(". ")
   const title = [
     approvedNames.length > 0 ? `Approved: ${approvedNames.join(", ")}` : "",
     pendingNames.length > 0 ? `Pending: ${pendingNames.join(", ")}` : "",
@@ -56,6 +75,7 @@ function CalendarDayButton(props: DayButtonProps) {
   return (
     <button
       {...rest}
+      aria-label={accessibleLabel}
       className={cn(
         rest.className,
         "relative cursor-default",

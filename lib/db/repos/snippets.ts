@@ -7,6 +7,7 @@ import { getDb } from "../connection"
 import type { SnippetRow } from "../schema"
 import type { Snippet } from "@/lib/domain"
 import { todayISO } from "@/lib/domain/date"
+import { nextSequence } from "./sequence"
 
 function toSnippet(row: SnippetRow): Snippet {
   return {
@@ -23,21 +24,24 @@ export type NewSnippet = Omit<Snippet, "id" | "usageCount" | "lastUsedAt">
 
 export async function listSnippets(): Promise<Snippet[]> {
   const rows = getDb()
-    .prepare("SELECT * FROM snippets ORDER BY created_at DESC")
+    .prepare("SELECT * FROM snippets ORDER BY created_at DESC, created_sequence DESC, id DESC")
     .all() as SnippetRow[]
   return rows.map(toSnippet)
 }
 
 export async function insertSnippet(input: NewSnippet): Promise<Snippet> {
   const id = randomUUID()
-  const createdAt = todayISO()
-  getDb()
+  const createdAt = new Date().toISOString()
+  const db = getDb()
+  const createdSequence = nextSequence(db, "snippets")
+  db
     .prepare(
-      `INSERT INTO snippets (id, title, description, content, usage_count, created_at)
-       VALUES (?, ?, ?, ?, 0, ?)`
+      `INSERT INTO snippets
+       (id, title, description, content, usage_count, created_at, created_sequence)
+       VALUES (?, ?, ?, ?, 0, ?, ?)`,
     )
-    .run(id, input.title, input.description ?? null, input.content, createdAt)
-  const row = getDb().prepare("SELECT * FROM snippets WHERE id = ?").get(id) as
+    .run(id, input.title, input.description ?? null, input.content, createdAt, createdSequence)
+  const row = db.prepare("SELECT * FROM snippets WHERE id = ?").get(id) as
     | SnippetRow
     | undefined
   if (!row) {

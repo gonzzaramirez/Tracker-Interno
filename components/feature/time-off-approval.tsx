@@ -128,7 +128,7 @@ export function TimeOffApproval({
                     aria-label={`Approve time off for ${memberName}`}
                     onClick={() => transition(entry.id, "approve")}
                   >
-                    {isPending ? <Loader2Icon className="animate-spin" aria-hidden /> : <CheckIcon aria-hidden />}
+                    {isPending ? <Loader2Icon className="motion-safe:animate-spin motion-reduce:animate-none" aria-hidden /> : <CheckIcon aria-hidden />}
                     Approve
                   </Button>
                   <Button
@@ -139,7 +139,7 @@ export function TimeOffApproval({
                     aria-label={`Reject time off for ${memberName}`}
                     onClick={() => transition(entry.id, "reject")}
                   >
-                    {isPending ? <Loader2Icon className="animate-spin" aria-hidden /> : <XIcon aria-hidden />}
+                    {isPending ? <Loader2Icon className="motion-safe:animate-spin motion-reduce:animate-none" aria-hidden /> : <XIcon aria-hidden />}
                     Reject
                   </Button>
                 </div>

@@ -74,7 +74,7 @@ export function ProgressControl({ taskId, taskTitle, initialValue }: ProgressCon
           disabled={isPending || (draft === null && note.trim() === "")}
           onClick={save}
         >
-          {isPending ? <Loader2Icon className="size-3.5 animate-spin" aria-hidden /> : <SaveIcon className="size-3.5" aria-hidden />}
+          {isPending ? <Loader2Icon className="size-3.5 motion-safe:animate-spin motion-reduce:animate-none" aria-hidden /> : <SaveIcon className="size-3.5" aria-hidden />}
           Save
         </Button>
       </div>

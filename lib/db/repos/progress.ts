@@ -6,6 +6,7 @@ import { randomUUID } from "node:crypto"
 import { getDb } from "../connection"
 import type { ProgressRow } from "../schema"
 import type { ProgressRecord, Task } from "@/lib/domain"
+import { nextSequence } from "./sequence"
 
 function toRecord(row: ProgressRow): ProgressRecord {
   return {
@@ -14,17 +15,25 @@ function toRecord(row: ProgressRow): ProgressRecord {
     date: row.progress_date,
     value: row.value,
     note: row.note ?? undefined,
+    createdAt: row.created_at,
+    createdSequence: row.created_sequence,
   }
 }
 
 export async function listProgress(): Promise<ProgressRecord[]> {
-  const rows = getDb().prepare("SELECT * FROM task_progress").all() as ProgressRow[]
+  const rows = getDb()
+    .prepare(
+      "SELECT * FROM task_progress ORDER BY progress_date ASC, created_at ASC, created_sequence ASC, id ASC",
+    )
+    .all() as ProgressRow[]
   return rows.map(toRecord)
 }
 
 export async function listProgressByTask(taskId: string): Promise<ProgressRecord[]> {
   const rows = getDb()
-    .prepare("SELECT * FROM task_progress WHERE task_id = ? ORDER BY progress_date ASC, id ASC")
+    .prepare(
+      "SELECT * FROM task_progress WHERE task_id = ? ORDER BY progress_date ASC, created_at ASC, created_sequence ASC, id ASC",
+    )
     .all(taskId) as ProgressRow[]
   return rows.map(toRecord)
 }
@@ -35,7 +44,9 @@ export async function listProgressByTasks(taskIds: string[]): Promise<ProgressRe
   }
   const placeholders = taskIds.map(() => "?").join(", ")
   const rows = getDb()
-    .prepare(`SELECT * FROM task_progress WHERE task_id IN (${placeholders})`)
+    .prepare(
+      `SELECT * FROM task_progress WHERE task_id IN (${placeholders}) ORDER BY progress_date ASC, created_at ASC, created_sequence ASC, id ASC`,
+    )
     .all(...taskIds) as ProgressRow[]
   return rows.map(toRecord)
 }
@@ -45,20 +56,32 @@ export async function listProgressByMemberTasks(tasks: Task[]): Promise<Progress
 }
 
 export async function insertProgressRecord(
-  input: Omit<ProgressRecord, "id">
+  input: Omit<ProgressRecord, "id" | "createdAt" | "createdSequence">
 ): Promise<ProgressRecord> {
   if (!Number.isInteger(input.value) || input.value < 0 || input.value > 100) {
     throw new RangeError("Progress must be an integer between 0 and 100.")
   }
 
   const id = randomUUID()
-  getDb()
+  const db = getDb()
+  const createdAt = new Date().toISOString()
+  const createdSequence = nextSequence(db, "task_progress")
+  db
     .prepare(
-      `INSERT INTO task_progress (id, task_id, value, progress_date, note)
-       VALUES (?, ?, ?, ?, ?)`
+      `INSERT INTO task_progress
+       (id, task_id, value, progress_date, note, created_at, created_sequence)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
     )
-    .run(id, input.taskId, input.value, input.date, input.note ?? null)
-  const row = getDb().prepare("SELECT * FROM task_progress WHERE id = ?").get(id) as
+    .run(
+      id,
+      input.taskId,
+      input.value,
+      input.date,
+      input.note ?? null,
+      createdAt,
+      createdSequence,
+    )
+  const row = db.prepare("SELECT * FROM task_progress WHERE id = ?").get(id) as
     | ProgressRow
     | undefined
   if (!row) {

@@ -19,13 +19,19 @@ import type { TaskStatus } from "@/lib/domain"
 import { runActionResult, type ActionResult } from "@/lib/actions/result"
 import type { ProgressRecord, Task } from "@/lib/domain"
 
+function revalidateTaskPaths(memberId: string): void {
+  revalidatePath("/tasks")
+  revalidatePath("/")
+  revalidatePath("/members")
+  revalidatePath(`/members/${memberId}`)
+}
+
 export async function createTaskAction(
   input: CreateTaskInput
 ): Promise<ActionResult<Task>> {
   const result = await runActionResult(() => createTask(input))
   if (result.ok) {
-    revalidatePath("/tasks")
-    revalidatePath("/")
+    revalidateTaskPaths(result.data.memberId)
   }
   return result
 }
@@ -36,8 +42,7 @@ export async function updateTaskAction(
 ): Promise<ActionResult<Task>> {
   const result = await runActionResult(() => updateTask(taskId, patch))
   if (result.ok) {
-    revalidatePath("/tasks")
-    revalidatePath("/")
+    revalidateTaskPaths(result.data.memberId)
   }
   return result
 }
@@ -48,8 +53,7 @@ export async function transitionTaskAction(
 ): Promise<ActionResult<Task>> {
   const result = await runActionResult(() => transitionStatus(taskId, status))
   if (result.ok) {
-    revalidatePath("/tasks")
-    revalidatePath("/")
+    revalidateTaskPaths(result.data.memberId)
   }
   return result
 }
@@ -61,8 +65,7 @@ export async function recordProgressAction(
 ): Promise<ActionResult<{ task: Task; record: ProgressRecord }>> {
   const result = await runActionResult(() => recordProgress(taskId, value, note))
   if (result.ok) {
-    revalidatePath("/tasks")
-    revalidatePath("/")
+    revalidateTaskPaths(result.data.task.memberId)
   }
   return result
 }

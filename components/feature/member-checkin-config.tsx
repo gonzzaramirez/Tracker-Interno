@@ -77,7 +77,7 @@ export function MemberCheckinConfig({ member }: { member: Member }) {
           />
         </div>
         <Button type="submit" disabled={isPending || !frequency}>
-          {isPending ? <Loader2Icon className="animate-spin" aria-hidden /> : null}
+          {isPending ? <Loader2Icon className="motion-safe:animate-spin motion-reduce:animate-none" aria-hidden /> : null}
           {isPending ? "Saving…" : "Save cadence"}
         </Button>
       </form>

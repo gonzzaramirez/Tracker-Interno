@@ -116,7 +116,7 @@ export function TaskRow({ taskWithProgress, members }: TaskRowProps) {
                 aria-label={`Edit ${task.title}`}
                 onClick={() => setEditing(true)}
               >
-                {isPending ? <Loader2Icon className="size-4 animate-spin" /> : <PencilIcon />}
+                {isPending ? <Loader2Icon className="size-4 motion-safe:animate-spin motion-reduce:animate-none" aria-hidden /> : <PencilIcon aria-hidden />}
               </Button>
             </div>
           </div>
