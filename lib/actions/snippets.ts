@@ -1,8 +1,8 @@
 "use server"
 
 /**
- * Snippet Server Actions (task 6.2) — create and mark-as-used mutations
- * with a revalidate of the library page (REQ-CC-002).
+ * Snippet Server Actions (task 6.2) — SQLite mutations with a revalidate of
+ * the library and dashboard pages (REQ-CC-002).
  */
 
 import { revalidatePath } from "next/cache"
@@ -17,6 +17,7 @@ export async function createSnippetAction(
   const result = await runActionResult(() => createSnippet(input))
   if (result.ok) {
     revalidatePath("/snippets")
+    revalidatePath("/")
   }
   return result
 }
@@ -25,6 +26,7 @@ export async function markSnippetUsedAction(id: string): Promise<ActionResult<Sn
   const result = await runActionResult(() => markSnippetUsed(id))
   if (result.ok) {
     revalidatePath("/snippets")
+    revalidatePath("/")
   }
   return result
 }

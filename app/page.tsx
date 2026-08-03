@@ -28,6 +28,9 @@ export const metadata = {
   title: "Overview",
 }
 
+export const dynamic = "force-dynamic"
+export const runtime = "nodejs"
+
 export default async function DashboardPage() {
   const [overview, metrics] = await Promise.all([
     getWeeklyOverview(),
@@ -73,7 +76,7 @@ export default async function DashboardPage() {
         <MetricCard
           label="Time off this week"
           value={metrics.timeOffCount}
-          hint="Vacation & recess"
+          hint="Approved time off"
           icon={CalendarDaysIcon}
           tone="amber"
           href="/calendar"

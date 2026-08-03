@@ -15,10 +15,9 @@ import {
 import { PriorityBadge, TaskStatusBadge } from "@/components/feature/status-badge"
 import { ProgressControl } from "@/components/feature/progress-control"
 import { TaskForm } from "@/components/feature/task-form"
-import type { Member, TaskStatus } from "@/lib/domain"
+import type { Member, TaskStatus, TaskWithProgress } from "@/lib/domain"
 import { TASK_STATUSES } from "@/lib/domain"
 import { transitionTaskAction } from "@/lib/actions/tasks"
-import type { TaskWithProgress } from "@/lib/services/tasks"
 
 type TaskRowProps = {
   taskWithProgress: TaskWithProgress

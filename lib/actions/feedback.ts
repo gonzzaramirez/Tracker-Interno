@@ -1,8 +1,7 @@
 "use server"
 
 /**
- * Feedback Server Action (task 5.2) — mutation in session + refresh
- * (REQ-CC-002).
+ * Feedback Server Action (task 5.2) — SQLite mutation + refresh (REQ-CC-002).
  */
 
 import { revalidatePath } from "next/cache"
@@ -17,6 +16,7 @@ export async function createFeedbackAction(
   const result = await runActionResult(() => createFeedback(input))
   if (result.ok) {
     revalidatePath("/feedback")
+    revalidatePath("/")
   }
   return result
 }

@@ -22,8 +22,9 @@ type TimeOffFormProps = {
 
 const TYPES: Array<{ value: TimeOffType; label: string }> = [
   { value: "vacation", label: "Vacation" },
-  { value: "recess", label: "Recovery" },
-  { value: "other", label: "Other" },
+  { value: "license", label: "License" },
+  { value: "sickness", label: "Sickness" },
+  { value: "holiday", label: "Holiday" },
 ]
 
 /**

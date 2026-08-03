@@ -1,30 +1,28 @@
-/**
- * Member profile use cases (task 3.1).
- */
+/** Member profile use cases over the SQLite repositories. */
 
-import type {
-  Feedback,
-  Member,
-  ProgressRecord,
-  Task,
-  TimeOffEntry,
-} from "@/lib/domain"
-import { listFeedbackByMember } from "@/lib/data/feedback"
-import { getMemberById, listMembers } from "@/lib/data/members"
-import { listProgressByMemberTasks } from "@/lib/data/progress"
-import { listTasksByMember } from "@/lib/data/tasks"
-import { listTimeOffByMember } from "@/lib/data/timeoff"
+import { cache } from "react"
 
-export type TimelineEntry = {
-  id: string
-  /** ISO date (YYYY-MM-DD). */
-  date: string
-  taskId: string
-  taskTitle: string
-  /** Progress value 0-100. */
-  value: number
-  note?: string
-}
+import type { Feedback, Member, ProgressRecord, Task, TimeOffEntry } from "@/lib/domain"
+import type { TimelineEntry } from "@/lib/domain/progress"
+import { listFeedbackByMember as listFeedbackByMemberRepo } from "@/lib/db/repos/feedback"
+import {
+  getMemberById as getMemberByIdRepo,
+  listMembers as listMembersRepo,
+} from "@/lib/db/repos/members"
+import { listProgressByMemberTasks as listProgressByMemberTasksRepo } from "@/lib/db/repos/progress"
+import {
+  listTasksByMember as listTasksByMemberRepo,
+} from "@/lib/db/repos/tasks"
+import { listTimeOffByMember as listTimeOffByMemberRepo } from "@/lib/db/repos/timeoff"
+
+export type { TimelineEntry } from "@/lib/domain/progress"
+
+const readMembers = cache(listMembersRepo)
+const readMemberById = cache(getMemberByIdRepo)
+const readFeedbackByMember = cache(listFeedbackByMemberRepo)
+const readTasksByMember = cache(listTasksByMemberRepo)
+const readTimeOffByMember = cache(listTimeOffByMemberRepo)
+const readProgressByMemberTasks = cache(listProgressByMemberTasksRepo)
 
 export type MemberFeed = {
   member: Member
@@ -35,17 +33,17 @@ export type MemberFeed = {
 }
 
 export async function getMembers(): Promise<Member[]> {
-  return listMembers()
+  return readMembers()
 }
 
 export async function getMember(id: string): Promise<Member | undefined> {
-  return getMemberById(id)
+  return readMemberById(id)
 }
 
-/** Follow-up records by date with their task title, chronological (REQ-MF-003). */
+/** Existing progress read model; check-in timeline UI belongs to package 3. */
 export async function getMemberTimeline(memberId: string): Promise<TimelineEntry[]> {
-  const tasks = await listTasksByMember(memberId)
-  const records = await listProgressByMemberTasks(tasks)
+  const tasks = await readTasksByMember(memberId)
+  const records = await readProgressByMemberTasks(tasks)
   const titleByTask = new Map(tasks.map((task) => [task.id, task.title]))
 
   return records
@@ -67,17 +65,17 @@ export async function getMemberTimeline(memberId: string): Promise<TimelineEntry
 
 /** Full member profile data (REQ-MF-002). */
 export async function getMemberFeed(memberId: string): Promise<MemberFeed | undefined> {
-  const member = await getMemberById(memberId)
+  const member = await readMemberById(memberId)
   if (!member) {
     return undefined
   }
 
   const [tasks, feedback, timeOff] = await Promise.all([
-    listTasksByMember(memberId),
-    listFeedbackByMember(memberId),
-    listTimeOffByMember(memberId),
+    readTasksByMember(memberId),
+    readFeedbackByMember(memberId),
+    readTimeOffByMember(memberId),
   ])
-  const progress = await listProgressByMemberTasks(tasks)
+  const progress = await readProgressByMemberTasks(tasks)
 
   return { member, tasks, progress, feedback, timeOff }
 }

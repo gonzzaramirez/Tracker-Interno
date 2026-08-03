@@ -1,8 +1,8 @@
 "use server"
 
 /**
- * Time-off Server Action (task 7.2) — creates an entry and refreshes the
- * calendar page (REQ-CC-002).
+ * Time-off Server Action (task 7.2) — creates a pending SQLite entry and
+ * refreshes the calendar/dashboard pages (REQ-CC-002).
  */
 
 import { revalidatePath } from "next/cache"
@@ -17,6 +17,7 @@ export async function requestTimeOffAction(
   const result = await runActionResult(() => requestTimeOff(input))
   if (result.ok) {
     revalidatePath("/calendar")
+    revalidatePath("/")
   }
   return result
 }

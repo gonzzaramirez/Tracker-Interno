@@ -5,7 +5,7 @@ import { DayPicker, getDefaultClassNames, type DayButtonProps } from "react-day-
 import "react-day-picker/style.css"
 
 import { cn } from "@/lib/utils"
-import { indexTimeOffByDate } from "@/lib/services/calendar"
+import { indexTimeOffByDate } from "@/lib/domain/date"
 import type { TimeOffEntry } from "@/lib/domain"
 
 type TimeOffCalendarProps = {

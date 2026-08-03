@@ -19,6 +19,9 @@ export const metadata = {
   title: "Tasks",
 }
 
+export const dynamic = "force-dynamic"
+export const runtime = "nodejs"
+
 export default async function TasksPage() {
   const [members, tasks] = await Promise.all([getMembers(), getTasksWithProgress()])
 

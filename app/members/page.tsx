@@ -17,6 +17,9 @@ export const metadata = {
   title: "Members",
 }
 
+export const dynamic = "force-dynamic"
+export const runtime = "nodejs"
+
 export default async function MembersPage() {
   const members = await getMembers()
 

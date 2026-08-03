@@ -1,6 +1,6 @@
 import { HistoryIcon } from "lucide-react"
 
-import type { TimelineEntry } from "@/lib/services/members"
+import type { TimelineEntry } from "@/lib/domain"
 import { Progress } from "@/components/ui/progress"
 import {
   Empty,

@@ -1,19 +1,24 @@
-/**
- * Task use cases (task 4.1). Mutations return the affected entity so Server
- * Actions can echo them back; errors throw and are caught by the action
- * wrapper (lib/actions/result.ts).
- */
+/** Task use cases over the SQLite repositories. */
 
-import type { ProgressRecord, Task, TaskPriority, TaskStatus } from "@/lib/domain"
+import { cache } from "react"
+
+import type { ProgressRecord, Task, TaskPriority, TaskStatus, TaskWithProgress } from "@/lib/domain"
+import { todayISO } from "@/lib/domain/date"
 import {
   getTaskById,
   insertTask,
   listTasks,
   listTasksByMember,
   updateTaskById,
-} from "@/lib/data/tasks"
-import { insertProgressRecord, listProgressByTasks } from "@/lib/data/progress"
-import { todayISO } from "@/lib/data/date"
+} from "@/lib/db/repos/tasks"
+import { insertProgressRecord, listProgressByTasks } from "@/lib/db/repos/progress"
+
+export type { TaskWithProgress } from "@/lib/domain"
+
+const readTasks = cache(listTasks)
+const readTasksByMember = cache(listTasksByMember)
+const readTaskById = cache(getTaskById)
+const readProgressByTasks = cache(listProgressByTasks)
 
 export type CreateTaskInput = {
   memberId: string
@@ -25,21 +30,13 @@ export type CreateTaskInput = {
 
 export type UpdateTaskInput = Partial<Omit<Task, "id" | "memberId" | "createdAt">>
 
-/** Task plus its progress history and the latest value (0 when empty). */
-export type TaskWithProgress = {
-  task: Task
-  records: ProgressRecord[]
-  /** Latest record value, 0 if the task has no history (REQ-TT-003). */
-  currentValue: number
-}
-
 function assertTaskFound(task: Task | undefined, id: string): asserts task is Task {
   if (!task) {
     throw new Error(`Task ${id} not found.`)
   }
 }
 
-function assertTitle(title: string) {
+function assertTitle(title: string): void {
   if (!title.trim()) {
     throw new Error("Task title is required.")
   }
@@ -73,7 +70,7 @@ function byDateAsc(a: ProgressRecord, b: ProgressRecord): number {
 }
 
 async function withRecords(tasks: Task[]): Promise<TaskWithProgress[]> {
-  const records = await listProgressByTasks(tasks.map((task) => task.id))
+  const records = await readProgressByTasks(tasks.map((task) => task.id))
   return tasks.map((task) => {
     const taskRecords = records
       .filter((record) => record.taskId === task.id)
@@ -87,20 +84,20 @@ async function withRecords(tasks: Task[]): Promise<TaskWithProgress[]> {
 }
 
 export async function getTasksByMember(memberId: string): Promise<Task[]> {
-  return listTasksByMember(memberId)
+  return readTasksByMember(memberId)
 }
 
 export async function getAllTasks(): Promise<Task[]> {
-  return listTasks()
+  return readTasks()
 }
 
 export async function getTask(id: string): Promise<Task | undefined> {
-  return getTaskById(id)
+  return readTaskById(id)
 }
 
 /** All tasks with their progress history — drives /tasks and /members views. */
 export async function getTasksWithProgress(): Promise<TaskWithProgress[]> {
-  return withRecords(await listTasks())
+  return withRecords(await readTasks())
 }
 
 export async function createTask(input: CreateTaskInput): Promise<Task> {
@@ -127,20 +124,18 @@ export async function updateTask(id: string, patch: UpdateTaskInput): Promise<Ta
   return updated
 }
 
-/** Status transitions (REQ-TT-004). */
 export async function transitionStatus(id: string, status: TaskStatus): Promise<Task> {
   const updated = await updateTaskById(id, { status })
   assertTaskFound(updated, id)
   return updated
 }
 
-/** Records a 0-100 progress value for a task (REQ-TT-003). */
 export async function recordProgress(
   taskId: string,
   value: number,
-  note?: string
+  note?: string,
 ): Promise<{ task: Task; record: ProgressRecord }> {
-  const task = await getTaskById(taskId)
+  const task = await readTaskById(taskId)
   assertTaskFound(task, taskId)
 
   const record = await insertProgressRecord({

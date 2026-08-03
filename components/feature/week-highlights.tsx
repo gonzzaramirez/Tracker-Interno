@@ -4,7 +4,7 @@ import {
   TriangleAlertIcon,
 } from "lucide-react"
 
-import type { WeekHighlight, WeekHighlightKind } from "@/lib/services/dashboard"
+import type { WeekHighlight, WeekHighlightKind } from "@/lib/domain"
 import { cn } from "@/lib/utils"
 
 const KIND_META: Record<

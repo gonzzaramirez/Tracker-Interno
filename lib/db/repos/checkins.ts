@@ -9,25 +9,17 @@ import { randomUUID } from "node:crypto"
 
 import { getDb } from "../connection"
 import type { CheckInRow, MemberRow, Semaphore } from "../schema"
-import type { MemberStatus } from "@/lib/domain"
+import type { CheckIn, MemberStatus } from "@/lib/domain"
 import { addDays, todayISO } from "@/lib/domain/date"
 import type { StoredMember } from "./members"
 
-export type CheckInRecord = {
-  id: string
-  memberId: string
-  date: string
-  semaphore: Semaphore | null
-  note?: string
-  createdAt: string
-}
+export type CheckInRecord = CheckIn
 
 function toMember(row: MemberRow): StoredMember {
   return {
     id: row.id,
     name: row.name,
     role: row.role,
-    displayColor: row.display_color,
     status: row.status as MemberStatus,
     joinedAt: row.joined_at,
     notes: row.notes ?? undefined,

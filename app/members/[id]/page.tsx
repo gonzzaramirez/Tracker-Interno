@@ -15,6 +15,9 @@ import {
 } from "@/components/ui/empty"
 import { getMemberFeed, getMemberTimeline } from "@/lib/services/members"
 
+export const dynamic = "force-dynamic"
+export const runtime = "nodejs"
+
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const feed = await getMemberFeed(id)

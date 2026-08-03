@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   title: "Snippets — Team Tracker",
 }
 
+export const dynamic = "force-dynamic"
+export const runtime = "nodejs"
+
 export default async function SnippetsPage() {
   const snippets = await getSnippets()
   const used = await getUsedSnippets()

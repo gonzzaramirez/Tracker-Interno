@@ -7,18 +7,13 @@ import { getDb } from "../connection"
 import type { MemberRow } from "../schema"
 import type { Member, MemberStatus } from "@/lib/domain"
 
-export type StoredMember = Member & {
-  checkinFreqDays: number
-  lastCheckinAt?: string
-  nextCheckinAt: string
-}
+export type StoredMember = Member
 
 function toMember(row: MemberRow): StoredMember {
   return {
     id: row.id,
     name: row.name,
     role: row.role,
-    displayColor: row.display_color,
     status: row.status as MemberStatus,
     joinedAt: row.joined_at,
     notes: row.notes ?? undefined,

@@ -1,9 +1,11 @@
-/**
- * Feedback use cases (task 5.1).
- */
+/** Feedback use cases over the SQLite repository. */
+
+import { cache } from "react"
 
 import type { Feedback, FeedbackCategory } from "@/lib/domain"
-import { insertFeedback, listFeedbackByMember } from "@/lib/data/feedback"
+import { insertFeedback, listFeedbackByMember } from "@/lib/db/repos/feedback"
+
+const readFeedbackByMember = cache(listFeedbackByMember)
 
 export type CreateFeedbackInput = {
   memberId: string
@@ -12,17 +14,20 @@ export type CreateFeedbackInput = {
   category: FeedbackCategory
 }
 
-function clampRating(rating: number): number {
+function normalizeRating(rating: number): number {
   if (!Number.isFinite(rating)) {
-    throw new Error("Rating must be a number between 0 and 5.")
+    throw new Error("Rating must be a number between 1 and 5.")
   }
-  return Math.min(5, Math.max(0, Math.round(rating)))
+  const normalized = Math.round(rating)
+  if (normalized < 1 || normalized > 5) {
+    throw new Error("Rating must be a number between 1 and 5.")
+  }
+  return normalized
 }
 
-/** Feedback entries for a member, newest first (REQ-FR-002). */
 export async function getByMember(memberId: string): Promise<Feedback[]> {
-  const entries = await listFeedbackByMember(memberId)
-  return entries.sort((a, b) => {
+  const entries = await readFeedbackByMember(memberId)
+  return [...entries].sort((a, b) => {
     if (a.date !== b.date) {
       return b.date.localeCompare(a.date)
     }
@@ -30,14 +35,12 @@ export async function getByMember(memberId: string): Promise<Feedback[]> {
   })
 }
 
-/** Average rating for a member, null when they have no feedback (REQ-FR-003). */
 export async function getAverageRating(memberId: string): Promise<number | null> {
-  const entries = await listFeedbackByMember(memberId)
+  const entries = await readFeedbackByMember(memberId)
   if (entries.length === 0) {
     return null
   }
-  const sum = entries.reduce((total, entry) => total + entry.rating, 0)
-  return sum / entries.length
+  return entries.reduce((total, entry) => total + entry.rating, 0) / entries.length
 }
 
 export async function createFeedback(input: CreateFeedbackInput): Promise<Feedback> {
@@ -46,7 +49,7 @@ export async function createFeedback(input: CreateFeedbackInput): Promise<Feedba
   }
   return insertFeedback({
     memberId: input.memberId,
-    rating: clampRating(input.rating),
+    rating: normalizeRating(input.rating),
     content: input.content.trim(),
     category: input.category,
   })

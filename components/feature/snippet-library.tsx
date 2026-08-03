@@ -6,7 +6,6 @@ import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
 import {
   Empty,
   EmptyContent,
@@ -73,11 +72,6 @@ function SnippetCard({ snippet }: SnippetCardProps) {
       </pre>
 
       <div className="flex flex-wrap items-center gap-2">
-        {snippet.tags.map((tag) => (
-          <Badge key={tag} variant="secondary" className="capitalize">
-            {tag}
-          </Badge>
-        ))}
         <span className="ml-auto text-xs tabular-nums text-muted-foreground">
           {snippet.usageCount} use{snippet.usageCount === 1 ? "" : "s"} ·{" "}
           {formatLastUsed(snippet.lastUsedAt)}
@@ -92,8 +86,8 @@ type SnippetLibraryProps = {
 }
 
 /**
- * Client-side library (task 6.3): search box filters by title, content and
- * tags; every card exposes copy + usage counter (REQ-SL-001/002).
+ * Client-side library (task 6.3): search box filters by title, description and
+ * content; every card exposes copy + usage counter (REQ-SL-001/002).
  */
 export function SnippetLibrary({ snippets }: SnippetLibraryProps) {
   const [query, setQuery] = useState("")
@@ -103,9 +97,9 @@ export function SnippetLibrary({ snippets }: SnippetLibraryProps) {
     if (!q) {
       return snippets
     }
-    return snippets.filter((snippet) => {
-      const haystack = [snippet.title, snippet.description ?? "", snippet.content, ...snippet.tags]
-        .join(" ")
+      return snippets.filter((snippet) => {
+        const haystack = [snippet.title, snippet.description ?? "", snippet.content]
+          .join(" ")
         .toLowerCase()
       return haystack.includes(q)
     })

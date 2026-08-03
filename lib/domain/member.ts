@@ -11,10 +11,14 @@ export type Member = {
   id: string
   name: string
   role: string
-  /** Hex color used as the member accent on list rows, badges and calendar pins. */
-  displayColor: string
   status: MemberStatus
   /** ISO date (YYYY-MM-DD). */
   joinedAt: string
   notes?: string
+  /** Number of days between scheduled check-ins. */
+  checkinFreqDays: number
+  /** ISO date of the last completed check-in, if any. */
+  lastCheckinAt?: string
+  /** ISO date when the next check-in becomes due. */
+  nextCheckinAt: string
 }

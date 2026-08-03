@@ -14,7 +14,6 @@ function toSnippet(row: SnippetRow): Snippet {
     title: row.title,
     description: row.description ?? undefined,
     content: row.content,
-    tags: [],
     usageCount: row.usage_count,
     lastUsedAt: row.last_used_at ?? undefined,
   }

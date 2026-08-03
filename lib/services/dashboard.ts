@@ -1,27 +1,30 @@
 /**
- * Weekly dashboard use cases (task 2.1).
+ * Weekly dashboard use cases over the SQLite repositories.
  *
- * Aggregates members, tasks, feedback and time-off repos into the shapes the
- * RSC pages render. This is the ONLY layer pages import — swap-safe (CC-001).
+ * Pages import this layer only. Repository reads are wrapped with React.cache
+ * so repeated reads during one server render share a result without adding
+ * mutable request state to the database singleton.
  */
 
 import { endOfWeek, startOfWeek } from "date-fns"
+import { cache } from "react"
 
 import type { Member, Task, TimeOffEntry } from "@/lib/domain"
-import { listFeedback } from "@/lib/data/feedback"
-import { listMembers } from "@/lib/data/members"
-import { listProgress } from "@/lib/data/progress"
-import { listTasks } from "@/lib/data/tasks"
-import { listTimeOff } from "@/lib/data/timeoff"
+import type { SeriesPoint, WeekHighlight } from "@/lib/domain/dashboard"
+import { addDays, todayISO } from "@/lib/domain/date"
+import { listFeedback as listFeedbackRepo } from "@/lib/db/repos/feedback"
+import { listMembers as listMembersRepo } from "@/lib/db/repos/members"
+import { listProgress as listProgressRepo } from "@/lib/db/repos/progress"
+import { listTasks as listTasksRepo } from "@/lib/db/repos/tasks"
+import { listTimeOff as listTimeOffRepo } from "@/lib/db/repos/timeoff"
 
-export type WeekHighlightKind = "due-today" | "overdue" | "time-off"
+export type { SeriesPoint, WeekHighlight, WeekHighlightKind } from "@/lib/domain/dashboard"
 
-export type WeekHighlight = {
-  kind: WeekHighlightKind
-  label: string
-  /** ISO date for the highlight (due date / time-off start). */
-  date?: string
-}
+const readMembers = cache(listMembersRepo)
+const readTasks = cache(listTasksRepo)
+const readProgress = cache(listProgressRepo)
+const readFeedback = cache(listFeedbackRepo)
+const readTimeOff = cache(listTimeOffRepo)
 
 export type MemberWeekView = {
   member: Member
@@ -32,55 +35,44 @@ export type WeeklyOverview = {
   members: MemberWeekView[]
 }
 
-export type SeriesPoint = {
-  /** ISO date (YYYY-MM-DD). */
-  date: string
-  /** Progress records registered that day. */
-  recorded: number
-  /** Feedback entries created that day. */
-  feedback: number
-}
-
 export type WeeklyMetrics = {
   memberCount: number
   openTasks: number
   completedTasks: number
   feedbackAvg: number | null
   feedbackCount: number
-  /** Time-off entries overlapping the current week. */
+  /** Approved time-off entries overlapping the current week. */
   timeOffCount: number
   series: SeriesPoint[]
 }
 
 const WEEK_START = { weekStartsOn: 1 } as const
 
-function toISO(date: Date): string {
+function isoDate(date: Date): string {
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, "0")
   const day = String(date.getDate()).padStart(2, "0")
   return `${year}-${month}-${day}`
 }
 
-function todayISO(): string {
-  return toISO(new Date())
-}
-
 /** [startISO, endISO] for the current week (Monday-Sunday). */
 function currentWeekRange(): [string, string] {
-  const start = startOfWeek(new Date(), WEEK_START)
-  const end = endOfWeek(new Date(), WEEK_START)
-  return [toISO(start), toISO(end)]
+  return [isoDate(startOfWeek(new Date(), WEEK_START)), isoDate(endOfWeek(new Date(), WEEK_START))]
 }
 
 function overlapsWeek(entry: TimeOffEntry, startISO: string, endISO: string): boolean {
   return entry.startDate <= endISO && entry.endDate >= startISO
 }
 
+function approvedEntries(entries: TimeOffEntry[]): TimeOffEntry[] {
+  return entries.filter((entry) => entry.status === "approved")
+}
+
 function buildHighlights(
   member: Member,
   tasks: Task[],
   timeOff: TimeOffEntry[],
-  weekRange: [string, string]
+  weekRange: [string, string],
 ): WeekHighlight[] {
   const today = todayISO()
   const highlights: WeekHighlight[] = []
@@ -97,10 +89,7 @@ function buildHighlights(
   }
 
   for (const entry of timeOff) {
-    if (entry.memberId !== member.id) {
-      continue
-    }
-    if (overlapsWeek(entry, weekRange[0], weekRange[1])) {
+    if (entry.memberId === member.id && overlapsWeek(entry, weekRange[0], weekRange[1])) {
       highlights.push({ kind: "time-off", label: entry.note ?? entry.type, date: entry.startDate })
     }
   }
@@ -108,13 +97,14 @@ function buildHighlights(
   return highlights
 }
 
-/** Weekly member list + per-member highlights (REQ-WD-001). */
+/** Weekly member list + per-member approved time-off/task highlights. */
 export async function getWeeklyOverview(): Promise<WeeklyOverview> {
-  const [members, tasks, timeOff] = await Promise.all([
-    listMembers(),
-    listTasks(),
-    listTimeOff(),
+  const [members, tasks, allTimeOff] = await Promise.all([
+    readMembers(),
+    readTasks(),
+    readTimeOff(),
   ])
+  const timeOff = approvedEntries(allTimeOff)
   const weekRange = currentWeekRange()
 
   return {
@@ -125,35 +115,34 @@ export async function getWeeklyOverview(): Promise<WeeklyOverview> {
   }
 }
 
-/** Weekly metrics + 7-day mini-graph series (REQ-WD-002). */
+/** Weekly metrics + 7-day mini-graph series. */
 export async function getWeeklyMetrics(): Promise<WeeklyMetrics> {
-  const [members, tasks, feedback, timeOff] = await Promise.all([
-    listMembers(),
-    listTasks(),
-    listFeedback(),
-    listTimeOff(),
+  const [members, tasks, feedback, allTimeOff, progress] = await Promise.all([
+    readMembers(),
+    readTasks(),
+    readFeedback(),
+    readTimeOff(),
+    readProgress(),
   ])
-  const progress = await listProgress()
+  const timeOff = approvedEntries(allTimeOff)
   const [weekStart, weekEnd] = currentWeekRange()
 
   const openTasks = tasks.filter((task) => task.status !== "done").length
   const completedTasks = tasks.filter((task) => task.status === "done").length
   const timeOffCount = timeOff.filter((entry) => overlapsWeek(entry, weekStart, weekEnd)).length
-
   const feedbackAvg =
     feedback.length === 0
       ? null
       : feedback.reduce((sum, entry) => sum + entry.rating, 0) / feedback.length
 
+  const today = todayISO()
   const series: SeriesPoint[] = []
   for (let offset = 6; offset >= 0; offset -= 1) {
-    const date = new Date()
-    date.setDate(date.getDate() - offset)
-    const key = toISO(date)
+    const date = addDays(today, -offset)
     series.push({
-      date: key,
-      recorded: progress.filter((record) => record.date === key).length,
-      feedback: feedback.filter((entry) => entry.date === key).length,
+      date,
+      recorded: progress.filter((record) => record.date === date).length,
+      feedback: feedback.filter((entry) => entry.date === date).length,
     })
   }
 

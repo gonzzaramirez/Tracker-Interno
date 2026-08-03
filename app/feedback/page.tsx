@@ -12,6 +12,9 @@ export const metadata: Metadata = {
   title: "Feedback — Team Tracker",
 }
 
+export const dynamic = "force-dynamic"
+export const runtime = "nodejs"
+
 export default async function FeedbackPage() {
   const members = await getMembers()
   const sections = await Promise.all(

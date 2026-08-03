@@ -4,7 +4,7 @@ import { ArrowRightIcon } from "lucide-react"
 import type { Member } from "@/lib/domain"
 import { StatusBadge } from "@/components/feature/status-badge"
 import { WeekHighlights } from "@/components/feature/week-highlights"
-import type { WeekHighlight } from "@/lib/services/dashboard"
+import type { WeekHighlight } from "@/lib/domain"
 
 type MemberRowProps = {
   member: Member
@@ -22,8 +22,7 @@ export function MemberRow({ member, highlights = [] }: MemberRowProps) {
       className="flex items-center gap-4 rounded-2xl px-2 py-3 transition-colors hover:bg-muted/60 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring/50 sm:px-3"
     >
       <span
-        className="flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white"
-        style={{ backgroundColor: member.displayColor }}
+        className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground"
         aria-hidden
       >
         {member.name

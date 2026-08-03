@@ -1,5 +1,4 @@
-import type { Member } from "@/lib/domain"
-import type { TaskWithProgress } from "@/lib/services/tasks"
+import type { Member, TaskWithProgress } from "@/lib/domain"
 import { AppleCard, AppleCardHeader, AppleCardTitle } from "@/components/feature/card"
 import { TaskRow } from "@/components/feature/task-row"
 import { StatusBadge } from "@/components/feature/status-badge"
@@ -29,8 +28,7 @@ export function TaskList({ groups, members }: TaskListProps) {
           <AppleCardHeader>
             <div className="flex items-center gap-3">
               <span
-                className="flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
-                style={{ backgroundColor: member.displayColor }}
+                className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground"
                 aria-hidden
               >
                 {member.name

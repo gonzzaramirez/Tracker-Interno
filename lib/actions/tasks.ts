@@ -1,8 +1,8 @@
 "use server"
 
 /**
- * Task Server Actions (task 4.2) — mutate the in-memory store and refresh the
- * tasks view (REQ-CC-002). Returns `ActionResult` envelopes.
+ * Task Server Actions (task 4.2) — persist mutations through the SQLite-backed
+ * services and refresh affected views (REQ-CC-002).
  */
 
 import { revalidatePath } from "next/cache"
@@ -25,6 +25,7 @@ export async function createTaskAction(
   const result = await runActionResult(() => createTask(input))
   if (result.ok) {
     revalidatePath("/tasks")
+    revalidatePath("/")
   }
   return result
 }
@@ -36,6 +37,7 @@ export async function updateTaskAction(
   const result = await runActionResult(() => updateTask(taskId, patch))
   if (result.ok) {
     revalidatePath("/tasks")
+    revalidatePath("/")
   }
   return result
 }
@@ -47,6 +49,7 @@ export async function transitionTaskAction(
   const result = await runActionResult(() => transitionStatus(taskId, status))
   if (result.ok) {
     revalidatePath("/tasks")
+    revalidatePath("/")
   }
   return result
 }
@@ -59,6 +62,7 @@ export async function recordProgressAction(
   const result = await runActionResult(() => recordProgress(taskId, value, note))
   if (result.ok) {
     revalidatePath("/tasks")
+    revalidatePath("/")
   }
   return result
 }

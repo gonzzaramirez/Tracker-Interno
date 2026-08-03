@@ -1,10 +1,17 @@
-/**
- * Time-off calendar use cases (task 7.1).
- */
+/** Time-off calendar use cases over the SQLite repository. */
+
+import { cache } from "react"
 
 import type { TimeOffEntry, TimeOffType } from "@/lib/domain"
-import { insertTimeOff, listTimeOff, listTimeOffByMember } from "@/lib/data/timeoff"
-import { eachDateInRange, todayISO } from "@/lib/data/date"
+import { todayISO } from "@/lib/domain/date"
+import {
+  insertTimeOff,
+  listTimeOff,
+  listTimeOffByMember,
+} from "@/lib/db/repos/timeoff"
+
+const readTimeOff = cache(listTimeOff)
+const readTimeOffByMember = cache(listTimeOffByMember)
 
 export type RequestTimeOffInput = {
   memberId: string
@@ -14,10 +21,9 @@ export type RequestTimeOffInput = {
   note?: string
 }
 
-/** All time-off entries, soonest first (REQ-TO-002). */
 export async function getTimeOffEntries(): Promise<TimeOffEntry[]> {
-  const entries = await listTimeOff()
-  return entries.sort((a, b) => {
+  const entries = await readTimeOff()
+  return [...entries].sort((a, b) => {
     if (a.startDate !== b.startDate) {
       return a.startDate.localeCompare(b.startDate)
     }
@@ -26,36 +32,22 @@ export async function getTimeOffEntries(): Promise<TimeOffEntry[]> {
 }
 
 export async function getTimeOffByMember(memberId: string): Promise<TimeOffEntry[]> {
-  const entries = await listTimeOffByMember(memberId)
-  return entries.sort((a, b) => b.startDate.localeCompare(a.startDate))
+  const entries = await readTimeOffByMember(memberId)
+  return [...entries].sort((a, b) => b.startDate.localeCompare(a.startDate))
 }
 
-/** Time-off entries that start today or later, soonest first (REQ-TO-002). */
+/** Upcoming approved or pending entries; rejected requests stay out of the list. */
 export async function getUpcomingTimeOffEntries(): Promise<TimeOffEntry[]> {
-  const entries = await listTimeOff()
   const today = todayISO()
+  const entries = await readTimeOff()
   return entries
-    .filter((entry) => entry.endDate >= today)
+    .filter((entry) => entry.status !== "rejected" && entry.endDate >= today)
     .sort((a, b) => {
       if (a.startDate !== b.startDate) {
         return a.startDate.localeCompare(b.startDate)
       }
       return b.endDate.localeCompare(a.endDate)
     })
-}
-
-/**
- * Indexes entries by covered date — `{ "2026-08-03": [entry, ...] }`.
- * Pure, serializable, feeds the calendar view (REQ-TO-001).
- */
-export function indexTimeOffByDate(entries: TimeOffEntry[]): Record<string, TimeOffEntry[]> {
-  const index: Record<string, TimeOffEntry[]> = {}
-  for (const entry of entries) {
-    for (const date of eachDateInRange(entry.startDate, entry.endDate)) {
-      ;(index[date] ??= []).push(entry)
-    }
-  }
-  return index
 }
 
 export async function requestTimeOff(input: RequestTimeOffInput): Promise<TimeOffEntry> {

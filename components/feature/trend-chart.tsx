@@ -3,7 +3,7 @@
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import { BarChart3Icon } from "lucide-react"
 
-import type { SeriesPoint } from "@/lib/services/dashboard"
+import type { SeriesPoint } from "@/lib/domain"
 import {
   ChartContainer,
   ChartTooltip,

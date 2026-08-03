@@ -7,7 +7,6 @@ export type Snippet = {
   title: string
   description?: string
   content: string
-  tags: string[]
   usageCount: number
   /** ISO date (YYYY-MM-DD) of the last copy. */
   lastUsedAt?: string

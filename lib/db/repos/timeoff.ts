@@ -8,18 +8,10 @@ import { randomUUID } from "node:crypto"
 
 import { getDb } from "../connection"
 import type { TimeOffRow, TimeOffStatus, TimeOffType } from "../schema"
+import type { TimeOffEntry } from "@/lib/domain"
 import { todayISO } from "@/lib/domain/date"
 
-export type StoredTimeOffEntry = {
-  id: string
-  memberId: string
-  startDate: string
-  endDate: string
-  type: TimeOffType
-  status: TimeOffStatus
-  note?: string
-  createdAt: string
-}
+export type StoredTimeOffEntry = TimeOffEntry
 
 function toEntry(row: TimeOffRow): StoredTimeOffEntry {
   return {
@@ -34,7 +26,7 @@ function toEntry(row: TimeOffRow): StoredTimeOffEntry {
   }
 }
 
-export type NewTimeOff = Omit<StoredTimeOffEntry, "id" | "createdAt" | "status"> & {
+export type NewTimeOff = Omit<TimeOffEntry, "id" | "createdAt" | "status"> & {
   status?: TimeOffStatus
 }
 

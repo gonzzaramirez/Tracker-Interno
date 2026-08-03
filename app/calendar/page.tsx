@@ -14,18 +14,25 @@ export const metadata: Metadata = {
   title: "Calendar — Team Tracker",
 }
 
+export const dynamic = "force-dynamic"
+export const runtime = "nodejs"
+
 const TYPE_META: Record<TimeOffType, { label: string; className: string }> = {
   vacation: {
     label: "Vacation",
     className: "bg-blue-500/10 text-blue-700 dark:bg-blue-400/15 dark:text-blue-300",
   },
-  recess: {
-    label: "Recovery",
+  license: {
+    label: "License",
     className: "bg-teal-500/10 text-teal-700 dark:bg-teal-400/15 dark:text-teal-300",
   },
-  other: {
-    label: "Other",
+  sickness: {
+    label: "Sickness",
     className: "bg-amber-500/10 text-amber-700 dark:bg-amber-400/15 dark:text-amber-300",
+  },
+  holiday: {
+    label: "Holiday",
+    className: "bg-purple-500/10 text-purple-700 dark:bg-purple-400/15 dark:text-purple-300",
   },
 }
 

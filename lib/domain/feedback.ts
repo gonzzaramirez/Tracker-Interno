@@ -11,7 +11,7 @@ export type Feedback = {
   memberId: string
   /** ISO date (YYYY-MM-DD). */
   date: string
-  /** Rating 0-5. */
+  /** Rating 1-5. */
   rating: number
   content: string
   category: FeedbackCategory
