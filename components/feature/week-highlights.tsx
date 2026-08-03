@@ -50,14 +50,14 @@ export function WeekHighlights({ highlights }: { highlights: WeekHighlight[] }) 
         const meta = KIND_META[highlight.kind]
         return (
           <span
-            key={`${highlight.kind}-${highlight.label}`}
+            key={`${highlight.id}-${highlight.date ?? ""}`}
             className={cn(
               "inline-flex h-6 max-w-44 items-center gap-1 rounded-full px-2 text-xs font-medium whitespace-nowrap",
               meta.className
             )}
             title={highlight.label}
           >
-            <meta.icon className="size-3 shrink-0" />
+            <meta.icon className="size-3 shrink-0" aria-hidden="true" />
             <span className="truncate">{highlight.label}</span>
           </span>
         )

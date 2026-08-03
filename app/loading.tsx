@@ -1,5 +1,7 @@
 import { Skeleton } from "@/components/ui/skeleton"
 
+const METRIC_SKELETONS = ["members", "tasks", "rating", "timeoff"] as const
+
 export default function Loading() {
   return (
     <div className="space-y-8">
@@ -8,8 +10,8 @@ export default function Loading() {
         <Skeleton className="h-9 w-56 rounded-xl" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {Array.from({ length: 4 }, (_, index) => (
-          <Skeleton key={index} className="h-28 rounded-3xl" />
+        {METRIC_SKELETONS.map((metric) => (
+          <Skeleton key={metric} className="h-28 rounded-3xl" />
         ))}
       </div>
       <div className="grid gap-4 lg:grid-cols-2">

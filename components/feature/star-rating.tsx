@@ -1,3 +1,6 @@
+"use client"
+
+import { useRef } from "react"
 import { StarIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -10,9 +13,9 @@ function StarRow({ filled, size = "default" }: { filled: boolean; size: "sm" | "
         size === "sm" ? "size-4" : "size-5",
         filled
           ? "fill-amber-400 text-amber-400"
-          : "fill-transparent text-foreground/20"
+          : "fill-transparent text-foreground/20",
       )}
-      aria-hidden
+      aria-hidden="true"
     />
   )
 }
@@ -23,27 +26,29 @@ type StarRatingProps = {
   size?: "sm" | "default"
 }
 
-/**
- * Read-only star display 0-5 (REQ-FR-001). Fractional values round to the
- * nearest star and, when `showValue`, the numeric average is displayed.
- */
+/** Read-only star display with a complete accessible name. */
 export function StarRating({
   value,
   showValue = false,
   size = "default",
 }: StarRatingProps) {
-  const filled = Math.round(Math.min(5, Math.max(0, value)))
+  const safeValue = Number.isFinite(value) ? Math.min(5, Math.max(0, value)) : 0
+  const filled = Math.round(safeValue)
 
   return (
-    <span className="inline-flex items-center gap-1.5">
-      <span className="inline-flex items-center gap-0.5">
+    <span
+      className="inline-flex items-center gap-1.5"
+      role="img"
+      aria-label={`Rating: ${safeValue.toFixed(1)} out of 5 stars`}
+    >
+      <span className="inline-flex items-center gap-0.5" aria-hidden="true">
         {[1, 2, 3, 4, 5].map((star) => (
           <StarRow key={star} filled={star <= filled} size={size} />
         ))}
       </span>
       {showValue ? (
-        <span className="text-xs font-medium tabular-nums text-muted-foreground">
-          {value.toFixed(1)}
+        <span className="text-xs font-medium tabular-nums text-muted-foreground" aria-hidden="true">
+          {safeValue.toFixed(1)}
         </span>
       ) : null}
     </span>
@@ -54,42 +59,88 @@ type StarRatingInputProps = {
   value: number
   onChange: (value: number) => void
   size?: "sm" | "default"
+  ariaLabelledBy?: string
 }
 
-/**
- * Interactive 1-5 star input (task 5.3) built with lucide — base-nova ships
- * no rating component.
- */
-export function StarRatingInput({ value, onChange, size = "default" }: StarRatingInputProps) {
+/** Interactive 1–5 star input with radio semantics and arrow-key navigation. */
+export function StarRatingInput({
+  value,
+  onChange,
+  size = "default",
+  ariaLabelledBy,
+}: StarRatingInputProps) {
+  const buttonRefs = useRef<Array<HTMLButtonElement | null>>([])
+
+  function moveSelection(star: number, direction: "next" | "previous" | "first" | "last") {
+    const next =
+      direction === "first"
+        ? 1
+        : direction === "last"
+          ? 5
+          : direction === "next"
+            ? star === 5
+              ? 1
+              : star + 1
+            : star === 1
+              ? 5
+              : star - 1
+    onChange(next)
+    requestAnimationFrame(() => buttonRefs.current[next - 1]?.focus())
+  }
+
   return (
     <div
       className="inline-flex items-center gap-0.5"
       role="radiogroup"
-      aria-label="Rating"
+      aria-label={ariaLabelledBy ? undefined : "Rating"}
+      aria-labelledby={ariaLabelledBy}
+      aria-orientation="horizontal"
     >
       {[1, 2, 3, 4, 5].map((star) => {
-        const selected = star <= value
+        const selected = star === value
+        const filled = star <= value
+        const tabIndex = value > 0 ? (selected ? 0 : -1) : star === 1 ? 0 : -1
+
         return (
           <button
             key={star}
+            ref={(element) => {
+              buttonRefs.current[star - 1] = element
+            }}
             type="button"
             role="radio"
             aria-checked={selected}
             aria-label={`${star} star${star === 1 ? "" : "s"}`}
+            tabIndex={tabIndex}
             onClick={() => onChange(star)}
+            onKeyDown={(event) => {
+              if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+                event.preventDefault()
+                moveSelection(star, "next")
+              } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+                event.preventDefault()
+                moveSelection(star, "previous")
+              } else if (event.key === "Home") {
+                event.preventDefault()
+                moveSelection(star, "first")
+              } else if (event.key === "End") {
+                event.preventDefault()
+                moveSelection(star, "last")
+              }
+            }}
             className={cn(
               "cursor-pointer rounded-md p-0.5 transition-transform focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring/50 active:scale-90",
-              !selected && "hover:opacity-70"
+              !filled && "hover:opacity-70",
             )}
           >
             <StarIcon
               className={cn(
                 size === "sm" ? "size-4" : "size-5",
-                selected
+                filled
                   ? "fill-amber-400 text-amber-400"
-                  : "fill-transparent text-muted-foreground/30"
+                  : "fill-transparent text-muted-foreground/30",
               )}
-              aria-hidden
+              aria-hidden="true"
             />
           </button>
         )

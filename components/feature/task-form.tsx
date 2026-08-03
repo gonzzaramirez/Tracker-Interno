@@ -34,13 +34,19 @@ const PRIORITIES: Array<{ value: TaskPriority; label: string }> = [
 
 /**
  * Create/edit task form (REQ-TT-002) bound to a Server Action; mutations are
- * echoed in-session after revalidation.
+ * persisted and echoed after revalidation.
  */
 export function TaskForm({ members, task, onClose }: TaskFormProps) {
   const [memberId, setMemberId] = useState(task?.memberId ?? members[0]?.id ?? "")
   const [priority, setPriority] = useState<TaskPriority>(task?.priority ?? "medium")
   const [isPending, startTransition] = useTransition()
   const formRef = useRef<HTMLFormElement>(null)
+  const formKey = task?.id ?? "create"
+  const titleId = `task-title-${formKey}`
+  const descriptionId = `task-description-${formKey}`
+  const memberIdForLabel = `task-member-${formKey}`
+  const priorityId = `task-priority-${formKey}`
+  const dueDateId = `task-duedate-${formKey}`
 
   function submitCreate(formData: FormData) {
     startTransition(async () => {
@@ -87,32 +93,32 @@ export function TaskForm({ members, task, onClose }: TaskFormProps) {
       className="grid gap-4 rounded-2xl bg-muted/40 p-4 sm:grid-cols-2"
     >
       <div className="space-y-1.5 sm:col-span-2">
-        <Label htmlFor="task-title">Title</Label>
+        <Label htmlFor={titleId}>Title</Label>
         <Input
-          id="task-title"
+          id={titleId}
           name="title"
           required
           defaultValue={task?.title}
-          placeholder="What needs to get done?"
+          placeholder="What needs to get done…"
         />
       </div>
 
       <div className="space-y-1.5 sm:col-span-2">
-        <Label htmlFor="task-description">Description</Label>
+        <Label htmlFor={descriptionId}>Description</Label>
         <Textarea
-          id="task-description"
+          id={descriptionId}
           name="description"
           defaultValue={task?.description ?? ""}
-          placeholder="Optional context for the task"
+          placeholder="Optional context for the task…"
           rows={2}
         />
       </div>
 
       {!task ? (
         <div className="flex flex-col gap-1.5">
-          <Label>Member</Label>
+          <Label htmlFor={memberIdForLabel}>Member</Label>
           <Select value={memberId} onValueChange={(value) => setMemberId(value ?? "")}>
-            <SelectTrigger className="w-full">
+            <SelectTrigger id={memberIdForLabel} aria-label="Member" className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -127,12 +133,12 @@ export function TaskForm({ members, task, onClose }: TaskFormProps) {
       ) : null}
 
       <div className="flex flex-col gap-1.5">
-        <Label>Priority</Label>
+        <Label htmlFor={priorityId}>Priority</Label>
         <Select
           value={priority}
           onValueChange={(value) => setPriority((value ?? "medium") as TaskPriority)}
         >
-          <SelectTrigger className="w-full">
+          <SelectTrigger id={priorityId} aria-label="Priority" className="w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -146,9 +152,9 @@ export function TaskForm({ members, task, onClose }: TaskFormProps) {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="task-duedate">Due date</Label>
+        <Label htmlFor={dueDateId}>Due date</Label>
         <Input
-          id="task-duedate"
+          id={dueDateId}
           name="dueDate"
           type="date"
           defaultValue={task?.dueDate ?? ""}

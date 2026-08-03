@@ -6,6 +6,7 @@ import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import {
   Select,
   SelectContent,
@@ -59,8 +60,9 @@ export function TimeOffForm({ members }: TimeOffFormProps) {
   return (
     <form ref={formRef} action={submit} className="grid gap-4">
       <div className="flex flex-col gap-1.5">
+        <Label htmlFor="timeoff-member">Member</Label>
         <Select value={memberId} onValueChange={(value) => setMemberId(value ?? "")}>
-          <SelectTrigger className="w-full">
+          <SelectTrigger id="timeoff-member" aria-label="Member" className="w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -89,11 +91,12 @@ export function TimeOffForm({ members }: TimeOffFormProps) {
       </div>
 
       <div className="flex flex-col gap-1.5">
+        <Label htmlFor="timeoff-type">Type</Label>
         <Select
           value={type}
           onValueChange={(value) => setType((value as TimeOffType) ?? "vacation")}
         >
-          <SelectTrigger className="w-full">
+          <SelectTrigger id="timeoff-type" aria-label="Time-off type" className="w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -107,7 +110,8 @@ export function TimeOffForm({ members }: TimeOffFormProps) {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <Input name="note" placeholder="Note (optional)" />
+        <Label htmlFor="timeoff-note">Note</Label>
+        <Input id="timeoff-note" name="note" placeholder="Note (optional)…" />
       </div>
 
       <div>

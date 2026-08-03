@@ -17,7 +17,7 @@ import {
 import type { TimeOffType } from "@/lib/domain"
 
 export const metadata: Metadata = {
-  title: "Calendar — Team Tracker",
+  title: "Calendar",
 }
 
 export const dynamic = "force-dynamic"

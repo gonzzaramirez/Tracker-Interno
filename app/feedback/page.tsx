@@ -9,7 +9,7 @@ import { getMembers } from "@/lib/services/members"
 import { getByMember, getAverageRating } from "@/lib/services/feedback"
 
 export const metadata: Metadata = {
-  title: "Feedback — Team Tracker",
+  title: "Feedback",
 }
 
 export const dynamic = "force-dynamic"

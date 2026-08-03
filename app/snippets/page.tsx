@@ -7,7 +7,7 @@ import { AppleCard, AppleCardTitle } from "@/components/feature/card"
 import { getSnippets, getUsedSnippets } from "@/lib/services/snippets"
 
 export const metadata: Metadata = {
-  title: "Snippets — Team Tracker",
+  title: "Snippets",
 }
 
 export const dynamic = "force-dynamic"

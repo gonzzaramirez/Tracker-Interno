@@ -12,6 +12,7 @@ import { recordProgressAction } from "@/lib/actions/tasks"
 
 type ProgressControlProps = {
   taskId: string
+  taskTitle: string
   initialValue: number
 }
 
@@ -19,7 +20,7 @@ type ProgressControlProps = {
  * 0-100 progress slider that persists a ProgressRecord (date, value, note)
  * through a Server Action (REQ-TT-003). Empty history renders 0.
  */
-export function ProgressControl({ taskId, initialValue }: ProgressControlProps) {
+export function ProgressControl({ taskId, taskTitle, initialValue }: ProgressControlProps) {
   const [draft, setDraft] = useState<number | null>(null)
   const [note, setNote] = useState("")
   const [isPending, startTransition] = useTransition()
@@ -48,19 +49,21 @@ export function ProgressControl({ taskId, initialValue }: ProgressControlProps) 
           step={1}
           value={[value]}
           onValueChange={(next) => setDraft(Array.isArray(next) ? next[0] : next)}
-          aria-label={`Progress for ${taskId}`}
+          aria-label={`Progress for ${taskTitle}`}
         />
         <span className="w-10 shrink-0 text-right text-sm font-medium tabular-nums text-foreground">
           {value}%
         </span>
       </div>
-      <Progress value={value} aria-label="Progress" />
+      <Progress value={value} aria-label={`Progress for ${taskTitle}`} />
       <div className="flex flex-wrap items-center gap-2">
         <Input
+          name="progress-note"
           type="text"
           value={note}
           onChange={(event) => setNote(event.target.value)}
-          placeholder="Note for this record (optional)"
+          placeholder="Note for this record (optional)…"
+          aria-label={`Note for progress on ${taskTitle}`}
           className="h-7 max-w-56 text-xs"
           disabled={isPending}
         />
@@ -71,7 +74,7 @@ export function ProgressControl({ taskId, initialValue }: ProgressControlProps) 
           disabled={isPending || (draft === null && note.trim() === "")}
           onClick={save}
         >
-          {isPending ? <Loader2Icon className="size-3.5 animate-spin" /> : <SaveIcon className="size-3.5" />}
+          {isPending ? <Loader2Icon className="size-3.5 animate-spin" aria-hidden /> : <SaveIcon className="size-3.5" aria-hidden />}
           Save
         </Button>
       </div>

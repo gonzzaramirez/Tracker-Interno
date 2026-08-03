@@ -31,7 +31,10 @@ export function AppNav() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-foreground/5 bg-background/70 backdrop-blur-xl">
-      <nav className="mx-auto flex w-full max-w-5xl items-center gap-1 px-4 py-3 sm:px-6 lg:px-8">
+      <nav
+        aria-label="Primary navigation"
+        className="mx-auto flex w-full max-w-5xl items-center gap-1 px-4 py-3 sm:px-6 lg:px-8"
+      >
         <Link
           href="/"
           className="mr-4 flex items-center gap-2 text-sm font-semibold tracking-tight text-foreground"

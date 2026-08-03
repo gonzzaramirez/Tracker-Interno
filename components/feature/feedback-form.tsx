@@ -5,6 +5,7 @@ import { Loader2Icon } from "lucide-react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import {
   Select,
@@ -29,7 +30,7 @@ const CATEGORIES: Array<{ value: FeedbackCategory; label: string }> = [
 
 /**
  * Feedback submission form (REQ-FR-002): member, star rating, category and
- * content go through a Server Action and persist in session.
+ * content go through a Server Action and persist in SQLite.
  */
 export function FeedbackForm({ members }: FeedbackFormProps) {
   const [memberId, setMemberId] = useState(members[0]?.id ?? "")
@@ -61,8 +62,9 @@ export function FeedbackForm({ members }: FeedbackFormProps) {
     <form ref={formRef} action={submit} className="grid gap-4">
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">
+          <Label htmlFor="feedback-member">Member</Label>
           <Select value={memberId} onValueChange={(value) => setMemberId(value ?? "")}>
-            <SelectTrigger className="w-full">
+            <SelectTrigger id="feedback-member" aria-label="Member" className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -75,11 +77,12 @@ export function FeedbackForm({ members }: FeedbackFormProps) {
           </Select>
         </div>
         <div className="flex flex-col gap-1.5">
+          <Label htmlFor="feedback-category">Category</Label>
           <Select
             value={category}
             onValueChange={(value) => setCategory((value ?? "praise") as FeedbackCategory)}
           >
-            <SelectTrigger className="w-full">
+            <SelectTrigger id="feedback-category" aria-label="Category" className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -94,12 +97,18 @@ export function FeedbackForm({ members }: FeedbackFormProps) {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <span className="text-sm leading-none font-medium select-none">Rating</span>
-        <StarRatingInput value={rating} onChange={setRating} />
+        <Label id="feedback-rating-label">Rating</Label>
+        <StarRatingInput
+          value={rating}
+          onChange={setRating}
+          ariaLabelledBy="feedback-rating-label"
+        />
       </div>
 
       <div className="flex flex-col gap-1.5">
+        <Label htmlFor="feedback-content">Notes</Label>
         <Textarea
+          id="feedback-content"
           name="content"
           rows={3}
           required

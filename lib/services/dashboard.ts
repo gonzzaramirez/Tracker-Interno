@@ -87,15 +87,20 @@ function buildHighlights(
       continue
     }
     if (task.dueDate === today) {
-      highlights.push({ kind: "due-today", label: task.title, date: task.dueDate })
+      highlights.push({ id: task.id, kind: "due-today", label: task.title, date: task.dueDate })
     } else if (task.dueDate < today) {
-      highlights.push({ kind: "overdue", label: task.title, date: task.dueDate })
+      highlights.push({ id: task.id, kind: "overdue", label: task.title, date: task.dueDate })
     }
   }
 
   for (const entry of timeOff) {
     if (entry.memberId === member.id && overlapsWeek(entry, weekRange[0], weekRange[1])) {
-      highlights.push({ kind: "time-off", label: entry.note ?? entry.type, date: entry.startDate })
+      highlights.push({
+        id: entry.id,
+        kind: "time-off",
+        label: entry.note ?? entry.type,
+        date: entry.startDate,
+      })
     }
   }
 

@@ -94,7 +94,11 @@ export function TaskRow({ taskWithProgress, members }: TaskRowProps) {
             </div>
             <div className="flex shrink-0 items-center gap-2">
               <Select value={task.status} onValueChange={(value) => changeStatus(value ?? "queued")}>
-                <SelectTrigger size="sm" className="w-fit">
+                <SelectTrigger
+                  size="sm"
+                  className="w-fit"
+                  aria-label={`Status for ${task.title}`}
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -118,7 +122,7 @@ export function TaskRow({ taskWithProgress, members }: TaskRowProps) {
           </div>
 
           {task.status !== "done" ? (
-            <ProgressControl taskId={task.id} initialValue={currentValue} />
+            <ProgressControl taskId={task.id} taskTitle={task.title} initialValue={currentValue} />
           ) : (
             <p className="text-xs text-muted-foreground">
               Final progress: {currentValue}% — task completed.

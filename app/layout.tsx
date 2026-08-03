@@ -23,8 +23,18 @@ export default function RootLayout({
     <html lang="en" className="h-full antialiased">
       <body className="flex min-h-full flex-col">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-lg focus:bg-background focus:px-3 focus:py-2 focus:text-sm focus:font-medium focus:text-foreground focus:ring-2 focus:ring-ring"
+          >
+            Skip to main content
+          </a>
           <AppNav />
-          <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
+          <main
+            id="main-content"
+            tabIndex={-1}
+            className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 outline-none focus-visible:ring-2 focus-visible:ring-ring sm:px-6 lg:px-8"
+          >
             {children}
           </main>
           <Toaster richColors position="top-center" />

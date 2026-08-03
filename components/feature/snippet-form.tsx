@@ -6,6 +6,7 @@ import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { createSnippetAction } from "@/lib/actions/snippets"
 
@@ -37,15 +38,19 @@ export function SnippetForm() {
   return (
     <form ref={formRef} action={submit} className="grid gap-4">
       <div className="flex flex-col gap-1.5">
+        <Label htmlFor="snippet-title">Title</Label>
         <Input
+          id="snippet-title"
           name="title"
-          placeholder="Title — e.g. Weekly standup recap"
+          placeholder="e.g. Weekly standup recap…"
           value={title}
           onChange={(event) => setTitle(event.target.value)}
         />
       </div>
       <div className="flex flex-col gap-1.5">
+        <Label htmlFor="snippet-content">Content</Label>
         <Textarea
+          id="snippet-content"
           name="content"
           rows={4}
           required
@@ -53,9 +58,11 @@ export function SnippetForm() {
         />
       </div>
       <div className="flex flex-col gap-1.5">
+        <Label htmlFor="snippet-description">Description</Label>
         <Input
+          id="snippet-description"
           name="description"
-          placeholder="Short description (optional)"
+          placeholder="Short description (optional)…"
         />
       </div>
       <div>
