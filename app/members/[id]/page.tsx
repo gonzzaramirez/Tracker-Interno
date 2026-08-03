@@ -3,6 +3,7 @@ import { MessageSquareTextIcon } from "lucide-react"
 
 import { AppleCard, AppleCardHeader, AppleCardTitle } from "@/components/feature/card"
 import { MemberProfileCard } from "@/components/feature/member-profile-card"
+import { MemberCheckinConfig } from "@/components/feature/member-checkin-config"
 import { Timeline } from "@/components/feature/timeline"
 import { PageHeader } from "@/components/layout/page-header"
 import {
@@ -39,9 +40,9 @@ const { id } = await params
 
   const timeline = await getMemberTimeline(id)
   const timelineDesc =
-    feed.progress.length === 0
-      ? "No progress records yet."
-      : `${feed.progress.length} follow-up record${feed.progress.length === 1 ? "" : "s"} across ${feed.tasks.length} task${feed.tasks.length === 1 ? "" : "s"}.`
+    timeline.length === 0
+      ? "No check-ins recorded yet."
+      : `${timeline.length} check-in record${timeline.length === 1 ? "" : "s"}.`
 
   return (
     <div className="space-y-8">
@@ -52,6 +53,8 @@ const { id } = await params
       />
 
       <MemberProfileCard member={feed.member} />
+
+      <MemberCheckinConfig member={feed.member} />
 
       <AppleCard>
         <AppleCardHeader>

@@ -2,20 +2,18 @@
 
 import { cache } from "react"
 
-import type { Feedback, Member, ProgressRecord, Task, TimeOffEntry } from "@/lib/domain"
-import type { TimelineEntry } from "@/lib/domain/progress"
+import type { CheckIn, Feedback, Member, ProgressRecord, Task, TimeOffEntry } from "@/lib/domain"
+import { listCheckInsByMember } from "@/lib/db/repos/checkins"
 import { listFeedbackByMember as listFeedbackByMemberRepo } from "@/lib/db/repos/feedback"
 import {
   getMemberById as getMemberByIdRepo,
   listMembers as listMembersRepo,
 } from "@/lib/db/repos/members"
 import { listProgressByMemberTasks as listProgressByMemberTasksRepo } from "@/lib/db/repos/progress"
-import {
-  listTasksByMember as listTasksByMemberRepo,
-} from "@/lib/db/repos/tasks"
+import { listTasksByMember as listTasksByMemberRepo } from "@/lib/db/repos/tasks"
 import { listTimeOffByMember as listTimeOffByMemberRepo } from "@/lib/db/repos/timeoff"
 
-export type { TimelineEntry } from "@/lib/domain/progress"
+export type TimelineEntry = CheckIn
 
 const readMembers = cache(listMembersRepo)
 const readMemberById = cache(getMemberByIdRepo)
@@ -23,6 +21,7 @@ const readFeedbackByMember = cache(listFeedbackByMemberRepo)
 const readTasksByMember = cache(listTasksByMemberRepo)
 const readTimeOffByMember = cache(listTimeOffByMemberRepo)
 const readProgressByMemberTasks = cache(listProgressByMemberTasksRepo)
+const readCheckInsByMember = cache(listCheckInsByMember)
 
 export type MemberFeed = {
   member: Member
@@ -40,27 +39,15 @@ export async function getMember(id: string): Promise<Member | undefined> {
   return readMemberById(id)
 }
 
-/** Existing progress read model; check-in timeline UI belongs to package 3. */
+/** Completed check-ins ordered chronologically for the member profile. */
 export async function getMemberTimeline(memberId: string): Promise<TimelineEntry[]> {
-  const tasks = await readTasksByMember(memberId)
-  const records = await readProgressByMemberTasks(tasks)
-  const titleByTask = new Map(tasks.map((task) => [task.id, task.title]))
-
-  return records
-    .map((record) => ({
-      id: record.id,
-      date: record.date,
-      taskId: record.taskId,
-      taskTitle: titleByTask.get(record.taskId) ?? "Unknown task",
-      value: record.value,
-      note: record.note,
-    }))
-    .sort((a, b) => {
-      if (a.date !== b.date) {
-        return a.date.localeCompare(b.date)
-      }
-      return a.id.localeCompare(b.id)
-    })
+  const records = await readCheckInsByMember(memberId)
+  return [...records].sort((a, b) => {
+    if (a.date !== b.date) {
+      return a.date.localeCompare(b.date)
+    }
+    return a.id.localeCompare(b.id)
+  })
 }
 
 /** Full member profile data (REQ-MF-002). */

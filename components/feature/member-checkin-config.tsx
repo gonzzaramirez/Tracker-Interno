@@ -1,0 +1,93 @@
+"use client"
+
+import { useState, useTransition } from "react"
+import { useRouter } from "next/navigation"
+import { Loader2Icon } from "lucide-react"
+import { toast } from "sonner"
+
+import { AppleCard, AppleCardDescription, AppleCardHeader, AppleCardTitle } from "@/components/feature/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { updateCheckInConfigAction } from "@/lib/actions/checkins"
+import type { Member } from "@/lib/domain"
+
+function formatDate(dateISO: string): string {
+  return new Date(`${dateISO}T00:00:00`).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  })
+}
+
+/** Member-level cadence control; next due date remains derived by SQLite. */
+export function MemberCheckinConfig({ member }: { member: Member }) {
+  const router = useRouter()
+  const [frequency, setFrequency] = useState(String(member.checkinFreqDays))
+  const [message, setMessage] = useState<{ kind: "idle" | "error" | "success"; text: string }>({
+    kind: "idle",
+    text: "",
+  })
+  const [isPending, startTransition] = useTransition()
+
+  function submit(formData: FormData) {
+    const nextFrequency = Number(formData.get("frequency"))
+    setMessage({ kind: "idle", text: "Saving…" })
+    startTransition(async () => {
+      const result = await updateCheckInConfigAction(member.id, nextFrequency)
+      if (!result.ok) {
+        setMessage({ kind: "error", text: result.error })
+        return
+      }
+      setMessage({ kind: "success", text: "Check-in cadence saved." })
+      toast.success("Check-in cadence saved")
+      router.refresh()
+    })
+  }
+
+  const hasError = message.kind === "error"
+
+  return (
+    <AppleCard>
+      <AppleCardHeader>
+        <div>
+          <AppleCardTitle>Check-in cadence</AppleCardTitle>
+          <AppleCardDescription>
+            Set how often this member should have a follow-up.
+          </AppleCardDescription>
+        </div>
+        <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
+          Next: {formatDate(member.nextCheckinAt)}
+        </span>
+      </AppleCardHeader>
+
+      <form action={submit} className="flex flex-wrap items-end gap-3">
+        <div className="grid min-w-44 gap-1.5">
+          <Label htmlFor={`checkin-frequency-${member.id}`}>Frequency in days</Label>
+          <Input
+            id={`checkin-frequency-${member.id}`}
+            name="frequency"
+            type="number"
+            min={1}
+            step={1}
+            value={frequency}
+            onChange={(event) => setFrequency(event.target.value)}
+            aria-invalid={hasError}
+            disabled={isPending}
+          />
+        </div>
+        <Button type="submit" disabled={isPending || !frequency}>
+          {isPending ? <Loader2Icon className="animate-spin" aria-hidden /> : null}
+          {isPending ? "Saving…" : "Save cadence"}
+        </Button>
+      </form>
+      <p
+        className={hasError ? "text-sm text-destructive" : "text-sm text-muted-foreground"}
+        aria-live="polite"
+        role={hasError ? "alert" : "status"}
+      >
+        {message.text || `Every ${member.checkinFreqDays} days`}
+      </p>
+    </AppleCard>
+  )
+}

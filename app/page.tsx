@@ -9,6 +9,7 @@ import {
 import { AppleCard, AppleCardHeader, AppleCardTitle } from "@/components/feature/card"
 import { MemberRow } from "@/components/feature/member-row"
 import { MetricCard } from "@/components/feature/metric-card"
+import { CheckInBanner } from "@/components/feature/check-in-banner"
 import { TrendChart } from "@/components/feature/trend-chart"
 import { PageHeader } from "@/components/layout/page-header"
 import {
@@ -19,6 +20,9 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty"
+import {
+  getDueCheckIns,
+} from "@/lib/services/checkins"
 import {
   getWeeklyMetrics,
   getWeeklyOverview,
@@ -32,9 +36,10 @@ export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
 
 export default async function DashboardPage() {
-  const [overview, metrics] = await Promise.all([
+  const [overview, metrics, dueCheckIns] = await Promise.all([
     getWeeklyOverview(),
     getWeeklyMetrics(),
+    getDueCheckIns(),
   ])
 
   const averageLabel =
@@ -47,6 +52,8 @@ export default async function DashboardPage() {
         title="Team overview"
         description="Highlights for every member — upcoming time off, tasks due today and overdue follow-ups."
       />
+
+      <CheckInBanner reminders={dueCheckIns} />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard

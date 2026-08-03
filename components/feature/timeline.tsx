@@ -1,7 +1,7 @@
 import { HistoryIcon } from "lucide-react"
 
-import type { TimelineEntry } from "@/lib/domain"
-import { Progress } from "@/components/ui/progress"
+import { SemaphorePill } from "@/components/feature/semaphore-pill"
+import type { CheckIn } from "@/lib/domain"
 import {
   Empty,
   EmptyContent,
@@ -11,11 +11,16 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty"
 
-/**
- * Chronological follow-up timeline (REQ-MF-003): each record shows the date,
- * linked task title, progress value (0-100) and optional note.
- */
-export function Timeline({ entries }: { entries: TimelineEntry[] }) {
+function formatDate(dateISO: string): string {
+  return new Date(`${dateISO}T00:00:00`).toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  })
+}
+
+/** Chronological check-in timeline with semaphore and optional notes. */
+export function Timeline({ entries }: { entries: CheckIn[] }) {
   if (entries.length === 0) {
     return (
       <Empty>
@@ -23,11 +28,11 @@ export function Timeline({ entries }: { entries: TimelineEntry[] }) {
           <EmptyMedia variant="icon">
             <HistoryIcon />
           </EmptyMedia>
-          <EmptyTitle>No follow-ups yet</EmptyTitle>
+          <EmptyTitle>No check-ins yet</EmptyTitle>
         </EmptyHeader>
         <EmptyContent>
           <EmptyDescription>
-            Progress records will show up here as follow-ups are logged.
+            Completed check-ins will appear here with their status and notes.
           </EmptyDescription>
         </EmptyContent>
       </Empty>
@@ -45,33 +50,16 @@ export function Timeline({ entries }: { entries: TimelineEntry[] }) {
             />
           ) : null}
           <span
-            className="size-8 shrink-0 rounded-full border border-foreground/10 bg-card text-xs font-semibold tabular-nums"
-            role="img"
-            aria-label={`${entry.value} percent on ${entry.date}`}
+            className="flex size-8 shrink-0 items-center justify-center rounded-full border border-foreground/10 bg-card text-xs font-semibold text-foreground"
+            aria-hidden
           >
-            <span className="flex size-full items-center justify-center rounded-full bg-muted/60 text-foreground">
-              {entry.value}
-            </span>
+            {index + 1}
           </span>
           <div className="min-w-0 flex-1 pb-1">
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-foreground">
-                  {entry.taskTitle}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {new Date(`${entry.date}T00:00:00`).toLocaleDateString("en-US", {
-                    weekday: "short",
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </p>
-              </div>
-              <p className="text-xs font-medium tabular-nums text-muted-foreground">
-                {entry.value}%
-              </p>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-sm font-medium text-foreground">{formatDate(entry.date)}</p>
+              <SemaphorePill semaphore={entry.semaphore} />
             </div>
-            <Progress value={entry.value} aria-label={`Progress on ${entry.taskTitle}`} />
             {entry.note ? (
               <p className="mt-2 rounded-xl bg-muted/60 px-3 py-2 text-xs text-muted-foreground">
                 {entry.note}
