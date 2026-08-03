@@ -6,8 +6,7 @@ import { randomUUID } from "node:crypto"
 import { getDb } from "../connection"
 import type { SnippetRow } from "../schema"
 import type { Snippet } from "@/lib/domain"
-import { todayISO } from "@/lib/domain/date"
-import { nextSequence } from "./sequence"
+import { nextSequence, nextSnippetUsageSequence } from "./sequence"
 
 function toSnippet(row: SnippetRow): Snippet {
   return {
@@ -16,11 +15,12 @@ function toSnippet(row: SnippetRow): Snippet {
     description: row.description ?? undefined,
     content: row.content,
     usageCount: row.usage_count,
-    lastUsedAt: row.last_used_at ?? undefined,
+    lastUsedAt: row.last_used_at?.slice(0, 10) ?? undefined,
+    lastUsedSequence: row.last_used_sequence ?? 0,
   }
 }
 
-export type NewSnippet = Omit<Snippet, "id" | "usageCount" | "lastUsedAt">
+export type NewSnippet = Omit<Snippet, "id" | "usageCount" | "lastUsedAt" | "lastUsedSequence">
 
 export async function listSnippets(): Promise<Snippet[]> {
   const rows = getDb()
@@ -37,8 +37,8 @@ export async function insertSnippet(input: NewSnippet): Promise<Snippet> {
   db
     .prepare(
       `INSERT INTO snippets
-       (id, title, description, content, usage_count, created_at, created_sequence)
-       VALUES (?, ?, ?, ?, 0, ?, ?)`,
+       (id, title, description, content, usage_count, last_used_at, last_used_sequence, created_at, created_sequence)
+       VALUES (?, ?, ?, ?, 0, NULL, NULL, ?, ?)`,
     )
     .run(id, input.title, input.description ?? null, input.content, createdAt, createdSequence)
   const row = db.prepare("SELECT * FROM snippets WHERE id = ?").get(id) as
@@ -52,19 +52,21 @@ export async function insertSnippet(input: NewSnippet): Promise<Snippet> {
 
 /** Increments usage_count and stamps last_used_at, returns the updated row. */
 export async function touchSnippet(id: string): Promise<Snippet | undefined> {
-  const today = todayISO()
-  const result = getDb()
+  const db = getDb()
+  const usedAt = new Date().toISOString()
+  const usageSequence = nextSnippetUsageSequence(db)
+  const result = db
     .prepare(
       `UPDATE snippets
-       SET usage_count = usage_count + 1, last_used_at = ?
+       SET usage_count = usage_count + 1, last_used_at = ?, last_used_sequence = ?
        WHERE id = ?`
     )
-    .run(today, id)
+    .run(usedAt, usageSequence, id)
 
   if (result.changes === 0) {
     return undefined
   }
-  const row = getDb().prepare("SELECT * FROM snippets WHERE id = ?").get(id) as
+  const row = db.prepare("SELECT * FROM snippets WHERE id = ?").get(id) as
     | SnippetRow
     | undefined
   return row ? toSnippet(row) : undefined

@@ -79,6 +79,7 @@ export type SnippetRow = {
   content: string
   usage_count: number
   last_used_at: string | null
+  last_used_sequence: number | null
   created_at: string
   created_sequence: number
 }

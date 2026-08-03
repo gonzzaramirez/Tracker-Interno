@@ -13,3 +13,12 @@ export function nextSequence(db: DatabaseSync, table: SequenceTable): number {
     .get() as SequenceRow
   return row.next_sequence
 }
+
+export function nextSnippetUsageSequence(db: DatabaseSync): number {
+  const row = db
+    .prepare(
+      "SELECT COALESCE(MAX(last_used_sequence), 0) + 1 AS next_sequence FROM snippets",
+    )
+    .get() as SequenceRow
+  return row.next_sequence
+}

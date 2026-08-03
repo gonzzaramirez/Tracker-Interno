@@ -98,7 +98,7 @@ export default async function DashboardPage() {
           <div>
             <AppleCardTitle>Weekly activity</AppleCardTitle>
             <p className="text-sm text-muted-foreground">
-              Last 7 days — follow-up records and feedback given.
+              Last 7 days — progress updates and feedback given.
             </p>
           </div>
         </AppleCardHeader>

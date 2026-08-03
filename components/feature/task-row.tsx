@@ -97,6 +97,7 @@ export function TaskRow({ taskWithProgress, members }: TaskRowProps) {
                 <SelectTrigger
                   size="sm"
                   className="w-fit"
+                  disabled={isPending}
                   aria-label={`Status for ${task.title}`}
                 >
                   <SelectValue />
@@ -113,6 +114,7 @@ export function TaskRow({ taskWithProgress, members }: TaskRowProps) {
                 type="button"
                 size="icon"
                 variant="ghost"
+                disabled={isPending}
                 aria-label={`Edit ${task.title}`}
                 onClick={() => setEditing(true)}
               >

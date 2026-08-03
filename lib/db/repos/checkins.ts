@@ -54,7 +54,11 @@ export async function listDueCheckIns(todayISO: string): Promise<StoredMember[]>
  */
 export async function markCheckIn(input: NewCheckIn): Promise<void> {
   const db = getDb()
-  const today = input.date ?? todayISO()
+  const currentDate = todayISO()
+  const today = input.date ?? currentDate
+  if (today > currentDate) {
+    throw new Error("A check-in cannot be recorded for a future date.")
+  }
   const id = randomUUID()
   db.exec("BEGIN")
   try {
@@ -64,6 +68,9 @@ export async function markCheckIn(input: NewCheckIn): Promise<void> {
 
     if (!member) {
       throw new Error("Member not found.")
+    }
+    if (member.next_checkin_at > today) {
+      throw new Error(`Check-in is not due until ${member.next_checkin_at}.`)
     }
 
     db.prepare(

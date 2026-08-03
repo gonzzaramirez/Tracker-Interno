@@ -569,8 +569,8 @@ export function seedIfEmpty(db: DatabaseSync): boolean {
 
     const insertSnippet = db.prepare(
       `INSERT INTO snippets
-       (id, title, description, content, usage_count, last_used_at, created_at, created_sequence)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+       (id, title, description, content, usage_count, last_used_at, last_used_sequence, created_at, created_sequence)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
     for (const [index, snippet] of SNIPPETS.entries()) {
       insertSnippet.run(
@@ -579,7 +579,8 @@ export function seedIfEmpty(db: DatabaseSync): boolean {
         snippet.description ?? null,
         snippet.content,
         snippet.usageCount,
-        snippet.lastUsedAt ?? null,
+        snippet.lastUsedAt ? `${snippet.lastUsedAt}T00:00:00.000Z` : null,
+        snippet.lastUsedAt ? snippet.usageCount : null,
         `${snippet.createdAt}T00:00:00.000Z`,
         index + 1,
       )

@@ -37,10 +37,11 @@ export function AppNav() {
       >
         <Link
           href="/"
+          aria-label="Team Tracker home"
           className="mr-4 flex items-center gap-2 text-sm font-semibold tracking-tight text-foreground"
         >
           <span className="flex size-7 items-center justify-center rounded-lg bg-foreground text-background">
-            <LayoutDashboardIcon className="size-4" />
+            <LayoutDashboardIcon className="size-4" aria-hidden="true" />
           </span>
           <span className="hidden sm:inline">Team Tracker</span>
         </Link>
@@ -58,7 +59,7 @@ export function AppNav() {
                   active && "bg-foreground/5 text-foreground"
                 )}
               >
-                <item.icon className="size-4" />
+                <item.icon className="size-4" aria-hidden="true" />
                 <span className="hidden md:inline">{item.label}</span>
               </Link>
             )

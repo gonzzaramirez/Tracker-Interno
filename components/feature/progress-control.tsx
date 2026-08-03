@@ -48,6 +48,7 @@ export function ProgressControl({ taskId, taskTitle, initialValue }: ProgressCon
           max={100}
           step={1}
           value={[value]}
+          disabled={isPending}
           onValueChange={(next) => setDraft(Array.isArray(next) ? next[0] : next)}
           aria-label={`Progress for ${taskTitle}`}
         />

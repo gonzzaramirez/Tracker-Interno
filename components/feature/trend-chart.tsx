@@ -21,7 +21,7 @@ import {
 
 const CHART_CONFIG = {
   recorded: {
-    label: "Follow-ups",
+    label: "Progress updates",
     color: "var(--chart-1)",
   },
   feedback: {
@@ -66,7 +66,12 @@ export function TrendChart({ series }: { series: SeriesPoint[] }) {
 
   return (
     <ChartContainer config={CHART_CONFIG} className="aspect-video">
-      <AreaChart data={data} margin={{ left: 0, right: 0, top: 4 }}>
+      <AreaChart
+        accessibilityLayer
+        aria-label="Weekly progress updates and feedback trend"
+        data={data}
+        margin={{ left: 0, right: 0, top: 4 }}
+      >
         <CartesianGrid vertical={false} />
         <XAxis
           dataKey="label"

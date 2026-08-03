@@ -55,8 +55,10 @@ export function TimeOffApproval({
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [feedback, setFeedback] = useState("")
+  const [confirmingId, setConfirmingId] = useState<string | null>(null)
 
   function transition(id: string, action: "approve" | "reject") {
+    setConfirmingId(null)
     setFeedback("Saving…")
     startTransition(async () => {
       const result =
@@ -131,17 +133,41 @@ export function TimeOffApproval({
                     {isPending ? <Loader2Icon className="motion-safe:animate-spin motion-reduce:animate-none" aria-hidden /> : <CheckIcon aria-hidden />}
                     Approve
                   </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="destructive"
-                    disabled={isPending}
-                    aria-label={`Reject time off for ${memberName}`}
-                    onClick={() => transition(entry.id, "reject")}
-                  >
-                    {isPending ? <Loader2Icon className="motion-safe:animate-spin motion-reduce:animate-none" aria-hidden /> : <XIcon aria-hidden />}
-                    Reject
-                  </Button>
+                  {confirmingId === entry.id ? (
+                    <div role="group" aria-label={`Confirm rejection for ${memberName}`} className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="destructive"
+                        disabled={isPending}
+                        onClick={() => transition(entry.id, "reject")}
+                      >
+                        {isPending ? <Loader2Icon className="motion-safe:animate-spin motion-reduce:animate-none" aria-hidden /> : <XIcon aria-hidden />}
+                        Confirm reject
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        disabled={isPending}
+                        onClick={() => setConfirmingId(null)}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="destructive"
+                      disabled={isPending}
+                      aria-label={`Reject time off for ${memberName}`}
+                      onClick={() => setConfirmingId(entry.id)}
+                    >
+                      <XIcon aria-hidden />
+                      Reject
+                    </Button>
+                  )}
                 </div>
               </li>
             )

@@ -114,7 +114,7 @@ export async function getWeeklyOverview(): Promise<WeeklyOverview> {
     readTasks(),
     readTimeOff(),
   ])
-  const timeOff = approvedEntries(allTimeOff)
+  const timeOff = approvedEntries(allTimeOff).filter((entry) => entry.endDate >= todayISO())
   const weekRange = currentWeekRange()
 
   return {

@@ -23,7 +23,10 @@ export async function getUsedSnippets(): Promise<Snippet[]> {
   const snippets = await readSnippets()
   return snippets
     .filter((snippet) => snippet.usageCount > 0)
-    .sort((a, b) => (b.lastUsedAt ?? "").localeCompare(a.lastUsedAt ?? ""))
+    .sort((a, b) => {
+      const dateOrder = (b.lastUsedAt ?? "").localeCompare(a.lastUsedAt ?? "")
+      return dateOrder !== 0 ? dateOrder : b.lastUsedSequence - a.lastUsedSequence
+    })
 }
 
 export async function createSnippet(input: CreateSnippetInput): Promise<Snippet> {
