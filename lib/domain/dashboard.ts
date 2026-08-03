@@ -15,3 +15,12 @@ export type SeriesPoint = {
   recorded: number
   feedback: number
 }
+
+export type WeeklyOccupancyPoint = {
+  /** ISO date (YYYY-MM-DD), Monday through Sunday. */
+  date: string
+  /** Short localized weekday label for the chart axis. */
+  label: string
+  /** Number of distinct members with approved time off on this date. */
+  count: number
+}

@@ -10,6 +10,7 @@ import { AppleCard, AppleCardHeader, AppleCardTitle } from "@/components/feature
 import { MemberRow } from "@/components/feature/member-row"
 import { MetricCard } from "@/components/feature/metric-card"
 import { CheckInBanner } from "@/components/feature/check-in-banner"
+import { OccupancyChart } from "@/components/feature/occupancy-chart"
 import { TrendChart } from "@/components/feature/trend-chart"
 import { PageHeader } from "@/components/layout/page-header"
 import {
@@ -26,6 +27,7 @@ import {
 import {
   getWeeklyMetrics,
   getWeeklyOverview,
+  getWeeklyOccupancy,
 } from "@/lib/services/dashboard"
 
 export const metadata = {
@@ -36,10 +38,11 @@ export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
 
 export default async function DashboardPage() {
-  const [overview, metrics, dueCheckIns] = await Promise.all([
+  const [overview, metrics, dueCheckIns, occupancy] = await Promise.all([
     getWeeklyOverview(),
     getWeeklyMetrics(),
     getDueCheckIns(),
+    getWeeklyOccupancy(),
   ])
 
   const averageLabel =
@@ -101,6 +104,8 @@ export default async function DashboardPage() {
         </AppleCardHeader>
         <TrendChart series={metrics.series} />
       </AppleCard>
+
+      <OccupancyChart data={occupancy} />
 
       <AppleCard>
         <AppleCardHeader>

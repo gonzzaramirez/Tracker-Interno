@@ -10,7 +10,7 @@ import { endOfWeek, startOfWeek } from "date-fns"
 import { cache } from "react"
 
 import type { Member, Task, TimeOffEntry } from "@/lib/domain"
-import type { SeriesPoint, WeekHighlight } from "@/lib/domain/dashboard"
+import type { SeriesPoint, WeekHighlight, WeeklyOccupancyPoint } from "@/lib/domain/dashboard"
 import { addDays, todayISO } from "@/lib/domain/date"
 import { listFeedback as listFeedbackRepo } from "@/lib/db/repos/feedback"
 import { listMembers as listMembersRepo } from "@/lib/db/repos/members"
@@ -18,7 +18,12 @@ import { listProgress as listProgressRepo } from "@/lib/db/repos/progress"
 import { listTasks as listTasksRepo } from "@/lib/db/repos/tasks"
 import { listTimeOff as listTimeOffRepo } from "@/lib/db/repos/timeoff"
 
-export type { SeriesPoint, WeekHighlight, WeekHighlightKind } from "@/lib/domain/dashboard"
+export type {
+  SeriesPoint,
+  WeekHighlight,
+  WeekHighlightKind,
+  WeeklyOccupancyPoint,
+} from "@/lib/domain/dashboard"
 
 const readMembers = cache(listMembersRepo)
 const readTasks = cache(listTasksRepo)
@@ -155,4 +160,25 @@ export async function getWeeklyMetrics(): Promise<WeeklyMetrics> {
     timeOffCount,
     series,
   }
+}
+
+/** Approved absences per day for the current Monday-Sunday week. */
+export async function getWeeklyOccupancy(): Promise<WeeklyOccupancyPoint[]> {
+  const entries = approvedEntries(await readTimeOff())
+  const weekStart = isoDate(startOfWeek(new Date(), WEEK_START))
+  const weekdayFormatter = new Intl.DateTimeFormat("en-US", { weekday: "short" })
+
+  return Array.from({ length: 7 }, (_, offset) => {
+    const date = addDays(weekStart, offset)
+    const absentMembers = new Set(
+      entries
+        .filter((entry) => entry.startDate <= date && entry.endDate >= date)
+        .map((entry) => entry.memberId),
+    )
+    return {
+      date,
+      label: weekdayFormatter.format(new Date(`${date}T00:00:00`)),
+      count: absentMembers.size,
+    }
+  })
 }
