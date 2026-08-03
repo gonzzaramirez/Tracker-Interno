@@ -73,9 +73,9 @@ export function TaskForm({ members, task, onClose }: TaskFormProps) {
     startTransition(async () => {
       const result = await updateTaskAction(task.id, {
         title: String(formData.get("title") ?? ""),
-        description: String(formData.get("description") ?? "") || undefined,
+        description: String(formData.get("description") ?? "") || null,
         priority,
-        dueDate: String(formData.get("dueDate") ?? "") || undefined,
+        dueDate: String(formData.get("dueDate") ?? "") || null,
       })
       if (result.ok) {
         toast.success("Task updated")

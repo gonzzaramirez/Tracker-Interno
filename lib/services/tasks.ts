@@ -28,7 +28,13 @@ export type CreateTaskInput = {
   dueDate?: string
 }
 
-export type UpdateTaskInput = Partial<Omit<Task, "id" | "memberId" | "createdAt">>
+export type UpdateTaskInput = {
+  title?: string
+  description?: string | null
+  priority?: TaskPriority
+  status?: TaskStatus
+  dueDate?: string | null
+}
 
 function assertTaskFound(task: Task | undefined, id: string): asserts task is Task {
   if (!task) {
@@ -98,6 +104,10 @@ export async function getTask(id: string): Promise<Task | undefined> {
 /** All tasks with their progress history — drives /tasks and /members views. */
 export async function getTasksWithProgress(): Promise<TaskWithProgress[]> {
   return withRecords(await readTasks())
+}
+
+export async function getTasksWithProgressByMember(memberId: string): Promise<TaskWithProgress[]> {
+  return withRecords(await readTasksByMember(memberId))
 }
 
 export async function createTask(input: CreateTaskInput): Promise<Task> {

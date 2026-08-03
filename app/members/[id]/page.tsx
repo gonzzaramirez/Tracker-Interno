@@ -4,6 +4,8 @@ import { MessageSquareTextIcon } from "lucide-react"
 import { AppleCard, AppleCardHeader, AppleCardTitle } from "@/components/feature/card"
 import { MemberProfileCard } from "@/components/feature/member-profile-card"
 import { MemberCheckinConfig } from "@/components/feature/member-checkin-config"
+import { MemberTimeOffFeed } from "@/components/feature/member-time-off-feed"
+import { TaskList, type MemberTaskGroup } from "@/components/feature/task-list"
 import { Timeline } from "@/components/feature/timeline"
 import { PageHeader } from "@/components/layout/page-header"
 import {
@@ -15,6 +17,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty"
 import { getMemberFeed, getMemberTimeline } from "@/lib/services/members"
+import { getTasksWithProgressByMember } from "@/lib/services/tasks"
 
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
@@ -30,7 +33,7 @@ export default async function MemberProfilePage({
 }: {
   params: Promise<{ id: string }>
 }) {
-const { id } = await params
+  const { id } = await params
   const feed = await getMemberFeed(id)
 
   // Unknown member id → real 404 (decision D8, REQ-MF-002 edge).
@@ -38,7 +41,15 @@ const { id } = await params
     notFound()
   }
 
-  const timeline = await getMemberTimeline(id)
+  const [timeline, tasksWithProgress] = await Promise.all([
+    getMemberTimeline(id),
+    getTasksWithProgressByMember(id),
+  ])
+  const taskGroup: MemberTaskGroup = {
+    member: feed.member,
+    active: tasksWithProgress.filter((entry) => entry.task.status !== "done"),
+    done: tasksWithProgress.filter((entry) => entry.task.status === "done"),
+  }
   const timelineDesc =
     timeline.length === 0
       ? "No check-ins recorded yet."
@@ -55,6 +66,10 @@ const { id } = await params
       <MemberProfileCard member={feed.member} />
 
       <MemberCheckinConfig member={feed.member} />
+
+      <TaskList groups={[taskGroup]} members={[feed.member]} />
+
+      <MemberTimeOffFeed entries={feed.timeOff} />
 
       <AppleCard>
         <AppleCardHeader>
@@ -84,9 +99,9 @@ const { id } = await params
               <EmptyTitle>No feedback yet</EmptyTitle>
             </EmptyHeader>
             <EmptyContent>
-<EmptyDescription>
+                <EmptyDescription>
                 Feedback entries for {feed.member.name.split(" ")[0]} will appear here.
-              </EmptyDescription>
+                </EmptyDescription>
             </EmptyContent>
           </Empty>
         ) : (

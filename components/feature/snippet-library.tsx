@@ -6,6 +6,7 @@ import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import {
   Empty,
   EmptyContent,
@@ -108,11 +109,16 @@ export function SnippetLibrary({ snippets }: SnippetLibraryProps) {
   return (
     <div className="space-y-4">
       <div className="relative">
+        <Label htmlFor="snippet-search" className="sr-only">
+          Search snippets
+        </Label>
         <SearchIcon className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
+          id="snippet-search"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search snippets by title, tag or content…"
+          aria-label="Search snippets"
+          placeholder="Search snippets by title or content…"
           className="ps-9"
         />
       </div>

@@ -1,13 +1,14 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { useTransition } from "react"
+import { useState, useTransition } from "react"
 import { CheckCircle2Icon, Clock3Icon, Loader2Icon } from "lucide-react"
 import { toast } from "sonner"
 
 import { AppleCard, AppleCardHeader, AppleCardTitle } from "@/components/feature/card"
 import { SemaphorePill } from "@/components/feature/semaphore-pill"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { completeCheckInAction } from "@/lib/actions/checkins"
 import type { CheckInReminder } from "@/lib/domain"
 import { cn } from "@/lib/utils"
@@ -24,6 +25,7 @@ function formatDueDate(dateISO: string): string {
 export function CheckInBanner({ reminders }: { reminders: CheckInReminder[] }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
+  const [notes, setNotes] = useState<Record<string, string>>({})
 
   if (reminders.length === 0) {
     return null
@@ -33,6 +35,7 @@ export function CheckInBanner({ reminders }: { reminders: CheckInReminder[] }) {
     startTransition(async () => {
       const result = await completeCheckInAction({
         memberId,
+        note: notes[memberId]?.trim() || undefined,
         semaphore: "green",
       })
       if (!result.ok) {
@@ -40,6 +43,11 @@ export function CheckInBanner({ reminders }: { reminders: CheckInReminder[] }) {
         return
       }
       toast.success(`Check-in completed for ${memberName}`)
+      setNotes((current) => {
+        const next = { ...current }
+        delete next[memberId]
+        return next
+      })
       router.refresh()
     })
   }
@@ -94,6 +102,17 @@ export function CheckInBanner({ reminders }: { reminders: CheckInReminder[] }) {
               {state === "overdue" ? "Overdue" : "Due"}
             </span>
             <SemaphorePill semaphore={lastSemaphore} />
+            <Input
+              name={`check-in-note-${member.id}`}
+              value={notes[member.id] ?? ""}
+              onChange={(event) =>
+                setNotes((current) => ({ ...current, [member.id]: event.target.value }))
+              }
+              placeholder="Optional note…"
+              aria-label={`Optional note for ${member.name}`}
+              className="h-7 min-w-40 max-w-52 text-xs"
+              disabled={isPending}
+            />
             <Button
               type="button"
               size="sm"

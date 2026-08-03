@@ -9,7 +9,13 @@ import type { Task, TaskPriority, TaskStatus } from "@/lib/domain"
 import { todayISO } from "@/lib/domain/date"
 
 export type NewTask = Omit<Task, "id" | "createdAt">
-export type UpdateTask = Partial<Omit<Task, "id" | "memberId" | "createdAt">>
+export type UpdateTask = {
+  title?: string
+  description?: string | null
+  priority?: TaskPriority
+  status?: TaskStatus
+  dueDate?: string | null
+}
 
 function toTask(row: TaskRow): Task {
   return {
@@ -70,7 +76,7 @@ export async function updateTaskById(
   id: string,
   patch: UpdateTask
 ): Promise<Task | undefined> {
-  const entries: Array<{ column: string; value: string }> = []
+  const entries: Array<{ column: string; value: string | null }> = []
   if (patch.title !== undefined) entries.push({ column: "title", value: patch.title })
   if (patch.description !== undefined) {
     entries.push({ column: "description", value: patch.description })
