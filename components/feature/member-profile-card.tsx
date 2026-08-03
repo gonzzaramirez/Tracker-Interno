@@ -9,7 +9,7 @@ type MemberProfileCardProps = {
 }
 
 function formatJoinedAt(joinedAt: string): string {
-  return new Date(`${joinedAt}T00:00:00`).toLocaleDateString("en-US", {
+  return new Date(`${joinedAt}T00:00:00`).toLocaleDateString("es-AR", {
     month: "long",
     year: "numeric",
   })
@@ -48,12 +48,12 @@ export function MemberProfileCard({ member }: MemberProfileCardProps) {
       <dl className="grid gap-3 text-sm sm:grid-cols-2">
         <div className="flex items-center gap-2 text-muted-foreground">
           <BriefcaseBusinessIcon className="size-4 shrink-0" />
-          <dt className="w-16 shrink-0 font-medium">Area</dt>
+          <dt className="w-16 shrink-0 font-medium">Área</dt>
           <dd className="text-foreground">{member.role}</dd>
         </div>
         <div className="flex items-center gap-2 text-muted-foreground">
           <CalendarDaysIcon className="size-4 shrink-0" />
-          <dt className="w-16 shrink-0 font-medium">Joined</dt>
+          <dt className="w-16 shrink-0 font-medium">Ingreso</dt>
           <dd className="text-foreground">{formatJoinedAt(member.joinedAt)}</dd>
         </div>
       </dl>

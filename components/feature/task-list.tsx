@@ -44,8 +44,8 @@ export function TaskList({ groups, members }: TaskListProps) {
                   <StatusBadge status={member.status} />
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  {member.role} · {active.length} active
-                  {done.length > 0 ? `, ${done.length} done` : ""}
+                  {member.role} · {active.length} activas
+                  {done.length > 0 ? `, ${done.length} hechas` : ""}
                 </p>
               </div>
             </div>
@@ -57,11 +57,11 @@ export function TaskList({ groups, members }: TaskListProps) {
                 <EmptyMedia variant="icon">
                   <CheckCircle2Icon />
                 </EmptyMedia>
-                <EmptyTitle>No tasks assigned</EmptyTitle>
+                <EmptyTitle>Sin tareas asignadas</EmptyTitle>
               </EmptyHeader>
               <EmptyContent>
                 <EmptyDescription>
-                  Create a task for {member.name.split(" ")[0]} to get started.
+                  Creá una tarea para {member.name.split(" ")[0]} para empezar.
                 </EmptyDescription>
               </EmptyContent>
             </Empty>
@@ -76,7 +76,7 @@ export function TaskList({ groups, members }: TaskListProps) {
           {done.length > 0 ? (
             <div className="divide-y divide-foreground/5 border-t border-foreground/5 pt-1">
               <p className="px-1 pt-3 pb-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                Completed
+                Completadas
               </p>
               {done.map((task) => (
                 <TaskRow key={task.task.id} taskWithProgress={task} members={members} />

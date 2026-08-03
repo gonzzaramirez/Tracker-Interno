@@ -39,7 +39,7 @@ export function StarRating({
     <span
       className="inline-flex items-center gap-1.5"
       role="img"
-      aria-label={`Rating: ${safeValue.toFixed(1)} out of 5 stars`}
+      aria-label={`Calificación: ${safeValue.toFixed(1)} de 5 estrellas`}
     >
       <span className="inline-flex items-center gap-0.5" aria-hidden="true">
         {[1, 2, 3, 4, 5].map((star) => (
@@ -92,7 +92,7 @@ export function StarRatingInput({
     <div
       className="inline-flex items-center gap-0.5"
       role="radiogroup"
-      aria-label={ariaLabelledBy ? undefined : "Rating"}
+      aria-label={ariaLabelledBy ? undefined : "Calificación"}
       aria-labelledby={ariaLabelledBy}
       aria-orientation="horizontal"
     >
@@ -110,7 +110,7 @@ export function StarRatingInput({
             type="button"
             role="radio"
             aria-checked={selected}
-            aria-label={`${star} star${star === 1 ? "" : "s"}`}
+            aria-label={`${star} estrella${star === 1 ? "" : "s"}`}
             tabIndex={tabIndex}
             onClick={() => onChange(star)}
             onKeyDown={(event) => {

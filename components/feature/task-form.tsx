@@ -27,9 +27,9 @@ type TaskFormProps = {
 }
 
 const PRIORITIES: Array<{ value: TaskPriority; label: string }> = [
-  { value: "low", label: "Low" },
-  { value: "medium", label: "Medium" },
-  { value: "high", label: "High" },
+  { value: "low", label: "Baja" },
+  { value: "medium", label: "Media" },
+  { value: "high", label: "Alta" },
 ]
 
 /**
@@ -58,7 +58,7 @@ export function TaskForm({ members, task, onClose }: TaskFormProps) {
         dueDate: String(formData.get("dueDate") ?? "") || undefined,
       })
       if (result.ok) {
-        toast.success("Task created")
+        toast.success("Tarea creada")
         formRef.current?.reset()
       } else {
         toast.error(result.error)
@@ -78,7 +78,7 @@ export function TaskForm({ members, task, onClose }: TaskFormProps) {
         dueDate: String(formData.get("dueDate") ?? "") || null,
       })
       if (result.ok) {
-        toast.success("Task updated")
+        toast.success("Tarea actualizada")
         onClose?.()
       } else {
         toast.error(result.error)
@@ -93,32 +93,32 @@ export function TaskForm({ members, task, onClose }: TaskFormProps) {
       className="grid gap-4 rounded-2xl bg-muted/40 p-4 sm:grid-cols-2"
     >
       <div className="space-y-1.5 sm:col-span-2">
-        <Label htmlFor={titleId}>Title</Label>
+        <Label htmlFor={titleId}>Título</Label>
         <Input
           id={titleId}
           name="title"
           required
           defaultValue={task?.title}
-          placeholder="What needs to get done…"
+          placeholder="Qué hay que hacer…"
         />
       </div>
 
       <div className="space-y-1.5 sm:col-span-2">
-        <Label htmlFor={descriptionId}>Description</Label>
+        <Label htmlFor={descriptionId}>Descripción</Label>
         <Textarea
           id={descriptionId}
           name="description"
           defaultValue={task?.description ?? ""}
-          placeholder="Optional context for the task…"
+          placeholder="Contexto opcional para la tarea…"
           rows={2}
         />
       </div>
 
       {!task ? (
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor={memberIdForLabel}>Member</Label>
+          <Label htmlFor={memberIdForLabel}>Miembro</Label>
           <Select value={memberId} onValueChange={(value) => setMemberId(value ?? "")}>
-            <SelectTrigger id={memberIdForLabel} aria-label="Member" className="w-full">
+            <SelectTrigger id={memberIdForLabel} aria-label="Miembro" className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -133,12 +133,12 @@ export function TaskForm({ members, task, onClose }: TaskFormProps) {
       ) : null}
 
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor={priorityId}>Priority</Label>
+        <Label htmlFor={priorityId}>Prioridad</Label>
         <Select
           value={priority}
           onValueChange={(value) => setPriority((value ?? "medium") as TaskPriority)}
         >
-          <SelectTrigger id={priorityId} aria-label="Priority" className="w-full">
+          <SelectTrigger id={priorityId} aria-label="Prioridad" className="w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -152,7 +152,7 @@ export function TaskForm({ members, task, onClose }: TaskFormProps) {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor={dueDateId}>Due date</Label>
+        <Label htmlFor={dueDateId}>Fecha de vencimiento</Label>
         <Input
           id={dueDateId}
           name="dueDate"
@@ -166,14 +166,14 @@ export function TaskForm({ members, task, onClose }: TaskFormProps) {
           {isPending ? (
             <Loader2Icon className="size-4 motion-safe:animate-spin motion-reduce:animate-none" aria-hidden />
           ) : task ? (
-            "Save changes"
+            "Guardar cambios"
           ) : (
-            "Create task"
+            "Crear tarea"
           )}
         </Button>
         {onClose ? (
           <Button type="button" variant="ghost" onClick={onClose}>
-            Cancel
+            Cancelar
           </Button>
         ) : null}
       </div>

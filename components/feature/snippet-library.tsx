@@ -20,9 +20,9 @@ import type { Snippet } from "@/lib/domain"
 
 function formatLastUsed(dateISO?: string): string {
   if (!dateISO) {
-    return "never used"
+    return "nunca usado"
   }
-  return `last used ${dateISO}`
+  return `último uso ${dateISO}`
 }
 
 type SnippetCardProps = {
@@ -41,13 +41,13 @@ function SnippetCard({ snippet }: SnippetCardProps) {
       startTransition(async () => {
         const result = await markSnippetUsedAction(snippet.id)
         if (!result.ok) {
-          toast.error(`Copied, but usage tracking failed: ${result.error}`)
+          toast.error(`Copiado, pero falló el seguimiento de uso: ${result.error}`)
           return
         }
-        toast.success("Copied to clipboard")
+        toast.success("Copiado al portapapeles")
       })
     } catch {
-      toast.error("Could not copy — clipboard unavailable")
+      toast.error("No se pudo copiar — portapapeles no disponible")
     }
   }
 
@@ -68,7 +68,7 @@ function SnippetCard({ snippet }: SnippetCardProps) {
           disabled={isPending}
         >
           {copied ? <CheckIcon className="size-3.5 text-green-600" /> : <ClipboardIcon className="size-3.5" />}
-          {copied ? "Copied" : "Copy"}
+          {copied ? "Copiado" : "Copiar"}
         </Button>
       </div>
 
@@ -78,7 +78,7 @@ function SnippetCard({ snippet }: SnippetCardProps) {
 
       <div className="flex flex-wrap items-center gap-2">
         <span className="ml-auto text-xs tabular-nums text-muted-foreground">
-          {snippet.usageCount} use{snippet.usageCount === 1 ? "" : "s"} ·{" "}
+          {snippet.usageCount} uso{snippet.usageCount === 1 ? "" : "s"} ·{" "}
           {formatLastUsed(snippet.lastUsedAt)}
         </span>
       </div>
@@ -114,15 +114,15 @@ export function SnippetLibrary({ snippets }: SnippetLibraryProps) {
     <div className="space-y-4">
       <div className="relative">
         <Label htmlFor="snippet-search" className="sr-only">
-          Search snippets
+          Buscar atajos
         </Label>
         <SearchIcon className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           id="snippet-search"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          aria-label="Search snippets"
-          placeholder="Search snippets by title or content…"
+          aria-label="Buscar atajos"
+          placeholder="Buscar atajos por título o contenido…"
           className="ps-9"
         />
       </div>
@@ -133,11 +133,11 @@ export function SnippetLibrary({ snippets }: SnippetLibraryProps) {
             <EmptyMedia variant="icon">
               <InboxIcon />
             </EmptyMedia>
-            <EmptyTitle>No snippets found</EmptyTitle>
+            <EmptyTitle>Sin atajos</EmptyTitle>
           </EmptyHeader>
           <EmptyContent>
             <EmptyDescription>
-              {query ? "Nothing matches that search." : "Add your first snippet with the form."}
+              {query ? "No coincide con esa búsqueda." : "Agregá tu primer atajo con el formulario."}
             </EmptyDescription>
           </EmptyContent>
         </Empty>

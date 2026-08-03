@@ -13,10 +13,10 @@ import {
 import type { TimeOffEntry, TimeOffType } from "@/lib/domain"
 
 const TYPE_LABELS: Record<TimeOffType, string> = {
-  vacation: "Vacation",
-  license: "License",
-  sickness: "Sickness",
-  holiday: "Holiday",
+  vacation: "Vacaciones",
+  license: "Licencia",
+  sickness: "Enfermedad",
+  holiday: "Feriado",
 }
 
 const STATUS_CLASSES: Record<TimeOffEntry["status"], string> = {
@@ -26,7 +26,7 @@ const STATUS_CLASSES: Record<TimeOffEntry["status"], string> = {
 }
 
 function formatRange(start: string, end: string): string {
-  const formatter = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" })
+  const formatter = new Intl.DateTimeFormat("es-AR", { month: "short", day: "numeric" })
   const startLabel = formatter.format(new Date(`${start}T00:00:00`))
   const endLabel = formatter.format(new Date(`${end}T00:00:00`))
   return start === end ? startLabel : `${startLabel} – ${endLabel}`
@@ -38,9 +38,9 @@ export function MemberTimeOffFeed({ entries }: { entries: TimeOffEntry[] }) {
     <AppleCard>
       <AppleCardHeader>
         <div>
-          <AppleCardTitle>Time off</AppleCardTitle>
+          <AppleCardTitle>Ausencias</AppleCardTitle>
           <p className="mt-1 text-sm text-muted-foreground">
-            Approved, pending and rejected requests for this member.
+            Solicitudes aprobadas, pendientes y rechazadas de este miembro.
           </p>
         </div>
       </AppleCardHeader>
@@ -51,10 +51,10 @@ export function MemberTimeOffFeed({ entries }: { entries: TimeOffEntry[] }) {
             <EmptyMedia variant="icon">
               <CalendarDaysIcon aria-hidden="true" />
             </EmptyMedia>
-            <EmptyTitle>No time off recorded</EmptyTitle>
+            <EmptyTitle>Sin ausencias registradas</EmptyTitle>
           </EmptyHeader>
           <EmptyContent>
-            <EmptyDescription>Requests for this member will appear here.</EmptyDescription>
+            <EmptyDescription>Las solicitudes de este miembro aparecerán acá.</EmptyDescription>
           </EmptyContent>
         </Empty>
       ) : (
@@ -69,7 +69,7 @@ export function MemberTimeOffFeed({ entries }: { entries: TimeOffEntry[] }) {
                 ) : null}
               </div>
               <Badge variant="outline" className={STATUS_CLASSES[entry.status]}>
-                {entry.status[0].toUpperCase() + entry.status.slice(1)}
+                {entry.status === "pending" ? "Pendiente" : entry.status === "approved" ? "Aprobado" : "Rechazado"}
               </Badge>
             </li>
           ))}

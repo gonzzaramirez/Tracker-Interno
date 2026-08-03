@@ -25,9 +25,9 @@ type TaskRowProps = {
 }
 
 const STATUS_LABELS: Record<TaskStatus, string> = {
-  queued: "Queued",
-  "in-progress": "In progress",
-  done: "Done",
+  queued: "En cola",
+  "in-progress": "En progreso",
+  done: "Hecho",
 }
 
 function todaysISO(): string {
@@ -42,11 +42,11 @@ function dueLabel(dueDate: string | undefined): string | null {
     return null
   }
   const due = new Date(`${dueDate}T00:00:00`)
-  const label = due.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+  const label = due.toLocaleDateString("es-AR", { month: "short", day: "numeric" })
   if (dueDate === todaysISO()) {
-    return `Due today, ${label}`
+    return `Vence hoy, ${label}`
   }
-  return `Due ${label}`
+  return `Vence ${label}`
 }
 
 /**
@@ -98,7 +98,7 @@ export function TaskRow({ taskWithProgress, members }: TaskRowProps) {
                   size="sm"
                   className="w-fit"
                   disabled={isPending}
-                  aria-label={`Status for ${task.title}`}
+                  aria-label={`Estado de ${task.title}`}
                 >
                   <SelectValue />
                 </SelectTrigger>
@@ -115,7 +115,7 @@ export function TaskRow({ taskWithProgress, members }: TaskRowProps) {
                 size="icon"
                 variant="ghost"
                 disabled={isPending}
-                aria-label={`Edit ${task.title}`}
+                aria-label={`Editar ${task.title}`}
                 onClick={() => setEditing(true)}
               >
                 {isPending ? <Loader2Icon className="size-4 motion-safe:animate-spin motion-reduce:animate-none" aria-hidden /> : <PencilIcon aria-hidden />}
@@ -127,7 +127,7 @@ export function TaskRow({ taskWithProgress, members }: TaskRowProps) {
             <ProgressControl taskId={task.id} taskTitle={task.title} initialValue={currentValue} />
           ) : (
             <p className="text-xs text-muted-foreground">
-              Final progress: {currentValue}% — task completed.
+              Progreso final: {currentValue}% — tarea completada.
             </p>
           )}
         </div>

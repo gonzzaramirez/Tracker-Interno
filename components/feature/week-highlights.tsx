@@ -12,19 +12,19 @@ const KIND_META: Record<
   { label: string; icon: typeof CalendarDaysIcon; className: string }
 > = {
   "due-today": {
-    label: "Due today",
+    label: "Vence hoy",
     icon: CalendarDaysIcon,
     className:
       "bg-blue-500/10 text-blue-700 dark:bg-blue-400/15 dark:text-blue-300",
   },
   overdue: {
-    label: "Overdue",
+    label: "Vencido",
     icon: TriangleAlertIcon,
     className:
       "bg-red-500/10 text-red-700 dark:bg-red-400/15 dark:text-red-300",
   },
   "time-off": {
-    label: "Time off",
+    label: "Ausencia",
     icon: CalendarClockIcon,
     className:
       "bg-indigo-500/10 text-indigo-700 dark:bg-indigo-400/15 dark:text-indigo-300",
@@ -39,7 +39,7 @@ export function WeekHighlights({ highlights }: { highlights: WeekHighlight[] }) 
   if (highlights.length === 0) {
     return (
       <p className="hidden shrink-0 text-xs text-muted-foreground sm:block">
-        Clear week
+        Semana despejada
       </p>
     )
   }

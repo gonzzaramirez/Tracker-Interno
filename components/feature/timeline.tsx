@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/empty"
 
 function formatDate(dateISO: string): string {
-  return new Date(`${dateISO}T00:00:00`).toLocaleDateString("en-US", {
+  return new Date(`${dateISO}T00:00:00`).toLocaleDateString("es-AR", {
     weekday: "short",
     month: "short",
     day: "numeric",
@@ -28,11 +28,11 @@ export function Timeline({ entries }: { entries: CheckIn[] }) {
           <EmptyMedia variant="icon">
             <HistoryIcon />
           </EmptyMedia>
-          <EmptyTitle>No check-ins yet</EmptyTitle>
+          <EmptyTitle>Sin check-ins aún</EmptyTitle>
         </EmptyHeader>
         <EmptyContent>
           <EmptyDescription>
-            Completed check-ins will appear here with their status and notes.
+            Los check-ins completados aparecerán acá con su estado y notas.
           </EmptyDescription>
         </EmptyContent>
       </Empty>

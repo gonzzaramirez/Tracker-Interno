@@ -21,16 +21,16 @@ import {
 
 const CHART_CONFIG = {
   recorded: {
-    label: "Progress updates",
+    label: "Actualizaciones de progreso",
     color: "var(--chart-1)",
   },
   feedback: {
-    label: "Feedback",
+    label: "Valoración",
     color: "var(--chart-2)",
   },
 } satisfies ChartConfig
 
-const DAY_LABEL_FORMATTER = new Intl.DateTimeFormat("en-US", { weekday: "short" })
+const DAY_LABEL_FORMATTER = new Intl.DateTimeFormat("es-AR", { weekday: "short" })
 
 function weekdayLabel(dateISO: string): string {
   return DAY_LABEL_FORMATTER.format(new Date(`${dateISO}T00:00:00`))
@@ -48,11 +48,11 @@ export function TrendChart({ series }: { series: SeriesPoint[] }) {
           <EmptyMedia variant="icon">
             <BarChart3Icon className="size-4" />
           </EmptyMedia>
-          <EmptyTitle>No weekly data yet</EmptyTitle>
+          <EmptyTitle>Sin datos semanales aún</EmptyTitle>
         </EmptyHeader>
         <EmptyContent>
           <EmptyDescription>
-            Log follow-ups or feedback during the week and the trend will appear here.
+            Registrá seguimientos o valoraciones durante la semana y la tendencia aparecerá acá.
           </EmptyDescription>
         </EmptyContent>
       </Empty>
@@ -68,7 +68,7 @@ export function TrendChart({ series }: { series: SeriesPoint[] }) {
     <ChartContainer config={CHART_CONFIG} className="aspect-video">
       <AreaChart
         accessibilityLayer
-        aria-label="Weekly progress updates and feedback trend"
+        aria-label="Tendencia semanal de actualizaciones de progreso y valoraciones"
         data={data}
         margin={{ left: 0, right: 0, top: 4 }}
       >

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     template: "%s · Team Tracker",
   },
   description:
-    "Weekly team overview — members, follow-ups, tasks, feedback, snippets and time-off.",
+    "Resumen semanal del equipo — miembros, seguimientos, tareas, valoración, atajos y ausencias.",
 };
 
 export default function RootLayout({
@@ -27,7 +27,7 @@ export default function RootLayout({
             href="#main-content"
             className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-lg focus:bg-background focus:px-3 focus:py-2 focus:text-sm focus:font-medium focus:text-foreground focus:ring-2 focus:ring-ring"
           >
-            Skip to main content
+            Saltar al contenido principal
           </a>
           <AppNav />
           <main

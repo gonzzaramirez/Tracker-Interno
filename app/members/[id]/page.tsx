@@ -25,7 +25,7 @@ export const runtime = "nodejs"
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const feed = await getMemberFeed(id)
-  return { title: feed ? feed.member.name : "Member not found" }
+  return { title: feed ? feed.member.name : "Miembro no encontrado" }
 }
 
 export default async function MemberProfilePage({
@@ -52,13 +52,13 @@ export default async function MemberProfilePage({
   }
   const timelineDesc =
     timeline.length === 0
-      ? "No check-ins recorded yet."
-      : `${timeline.length} check-in record${timeline.length === 1 ? "" : "s"}.`
+      ? "Sin check-ins registrados aún."
+      : `${timeline.length} registro de check-in${timeline.length === 1 ? "" : "s"}.`
 
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow="Member"
+        eyebrow="Miembro"
         title={feed.member.name}
         description={feed.member.role}
       />
@@ -74,7 +74,7 @@ export default async function MemberProfilePage({
       <AppleCard>
         <AppleCardHeader>
           <div>
-            <AppleCardTitle>Follow-up timeline</AppleCardTitle>
+            <AppleCardTitle>Línea de tiempo</AppleCardTitle>
             <p className="text-sm text-muted-foreground">{timelineDesc}</p>
           </div>
         </AppleCardHeader>
@@ -84,9 +84,9 @@ export default async function MemberProfilePage({
       <AppleCard>
         <AppleCardHeader>
           <div>
-            <AppleCardTitle>Recent feedback</AppleCardTitle>
+            <AppleCardTitle>Valoraciones recientes</AppleCardTitle>
             <p className="text-sm text-muted-foreground">
-              Latest praise, coaching notes and concerns.
+              Últimos reconocimientos, notas de coaching y preocupaciones.
             </p>
           </div>
         </AppleCardHeader>
@@ -96,11 +96,11 @@ export default async function MemberProfilePage({
               <EmptyMedia variant="icon">
                 <MessageSquareTextIcon />
               </EmptyMedia>
-              <EmptyTitle>No feedback yet</EmptyTitle>
+              <EmptyTitle>Sin valoración aún</EmptyTitle>
             </EmptyHeader>
             <EmptyContent>
                 <EmptyDescription>
-                Feedback entries for {feed.member.name.split(" ")[0]} will appear here.
+                Las valoraciones de {feed.member.name.split(" ")[0]} aparecerán acá.
                 </EmptyDescription>
             </EmptyContent>
           </Empty>

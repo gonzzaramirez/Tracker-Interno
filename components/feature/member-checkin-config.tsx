@@ -13,7 +13,7 @@ import { updateCheckInConfigAction } from "@/lib/actions/checkins"
 import type { Member } from "@/lib/domain"
 
 function formatDate(dateISO: string): string {
-  return new Date(`${dateISO}T00:00:00`).toLocaleDateString("en-US", {
+  return new Date(`${dateISO}T00:00:00`).toLocaleDateString("es-AR", {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -32,15 +32,15 @@ export function MemberCheckinConfig({ member }: { member: Member }) {
 
   function submit(formData: FormData) {
     const nextFrequency = Number(formData.get("frequency"))
-    setMessage({ kind: "idle", text: "Saving…" })
+    setMessage({ kind: "idle", text: "Guardando…" })
     startTransition(async () => {
       const result = await updateCheckInConfigAction(member.id, nextFrequency)
       if (!result.ok) {
         setMessage({ kind: "error", text: result.error })
         return
       }
-      setMessage({ kind: "success", text: "Check-in cadence saved." })
-      toast.success("Check-in cadence saved")
+      setMessage({ kind: "success", text: "Frecuencia de check-in guardada." })
+      toast.success("Frecuencia de check-in guardada")
       router.refresh()
     })
   }
@@ -51,19 +51,19 @@ export function MemberCheckinConfig({ member }: { member: Member }) {
     <AppleCard>
       <AppleCardHeader>
         <div>
-          <AppleCardTitle>Check-in cadence</AppleCardTitle>
+          <AppleCardTitle>Frecuencia de check-in</AppleCardTitle>
           <AppleCardDescription>
-            Set how often this member should have a follow-up.
+            Configurá cada cuánto debería tener un seguimiento este miembro.
           </AppleCardDescription>
         </div>
         <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
-          Next: {formatDate(member.nextCheckinAt)}
+          Próximo: {formatDate(member.nextCheckinAt)}
         </span>
       </AppleCardHeader>
 
       <form action={submit} className="flex flex-wrap items-end gap-3">
         <div className="grid min-w-44 gap-1.5">
-          <Label htmlFor={`checkin-frequency-${member.id}`}>Frequency in days</Label>
+          <Label htmlFor={`checkin-frequency-${member.id}`}>Frecuencia en días</Label>
           <Input
             id={`checkin-frequency-${member.id}`}
             name="frequency"
@@ -78,7 +78,7 @@ export function MemberCheckinConfig({ member }: { member: Member }) {
         </div>
         <Button type="submit" disabled={isPending || !frequency}>
           {isPending ? <Loader2Icon className="motion-safe:animate-spin motion-reduce:animate-none" aria-hidden /> : null}
-          {isPending ? "Saving…" : "Save cadence"}
+          {isPending ? "Guardando…" : "Guardar frecuencia"}
         </Button>
       </form>
       <p
@@ -86,7 +86,7 @@ export function MemberCheckinConfig({ member }: { member: Member }) {
         aria-live="polite"
         role={hasError ? "alert" : "status"}
       >
-        {message.text || `Every ${member.checkinFreqDays} days`}
+        {message.text || `Cada ${member.checkinFreqDays} días`}
       </p>
     </AppleCard>
   )

@@ -31,7 +31,7 @@ import {
 } from "@/lib/services/dashboard"
 
 export const metadata = {
-  title: "Overview",
+  title: "Panel",
 }
 
 export const dynamic = "force-dynamic"
@@ -46,47 +46,47 @@ export default async function DashboardPage() {
   ])
 
   const averageLabel =
-    metrics.feedbackAvg === null ? "No feedback yet" : metrics.feedbackAvg.toFixed(1)
+    metrics.feedbackAvg === null ? "Sin valoración aún" : metrics.feedbackAvg.toFixed(1)
 
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow="This week"
-        title="Team overview"
-        description="Highlights for every member — upcoming time off, tasks due today and overdue follow-ups."
+        eyebrow="Esta semana"
+        title="Panel del equipo"
+        description="Destacados de cada miembro — ausencias próximas, tareas vencidas hoy y seguimientos vencidos."
       />
 
       <CheckInBanner reminders={dueCheckIns} />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard
-          label="Members"
+          label="Miembros"
           value={metrics.memberCount}
-          hint="Active roster"
+          hint="Plantilla activa"
           icon={UsersIcon}
           tone="blue"
           href="/members"
         />
         <MetricCard
-          label="Tasks open"
+          label="Tareas abiertas"
           value={metrics.openTasks}
-          hint={`${metrics.completedTasks} completed`}
+          hint={`${metrics.completedTasks} completadas`}
           icon={CheckSquareIcon}
           tone="violet"
           href="/tasks"
         />
         <MetricCard
-          label="Avg rating"
+          label="Calificación promedio"
           value={averageLabel}
-          hint={`${metrics.feedbackCount} entries`}
+          hint={`${metrics.feedbackCount} registros`}
           icon={MessageSquareTextIcon}
           tone="green"
           href="/feedback"
         />
         <MetricCard
-          label="Time off this week"
+          label="Ausencias esta semana"
           value={metrics.timeOffCount}
-          hint="Approved time off"
+          hint="Ausencias aprobadas"
           icon={CalendarDaysIcon}
           tone="amber"
           href="/calendar"
@@ -96,9 +96,9 @@ export default async function DashboardPage() {
       <AppleCard>
         <AppleCardHeader>
           <div>
-            <AppleCardTitle>Weekly activity</AppleCardTitle>
+            <AppleCardTitle>Actividad semanal</AppleCardTitle>
             <p className="text-sm text-muted-foreground">
-              Last 7 days — progress updates and feedback given.
+              Últimos 7 días — actualizaciones de progreso y valoraciones realizadas.
             </p>
           </div>
         </AppleCardHeader>
@@ -110,16 +110,16 @@ export default async function DashboardPage() {
       <AppleCard>
         <AppleCardHeader>
           <div>
-            <AppleCardTitle>Members</AppleCardTitle>
+            <AppleCardTitle>Miembros</AppleCardTitle>
             <p className="text-sm text-muted-foreground">
-              Current week highlights per person.
+              Destacados de la semana actual por persona.
             </p>
           </div>
           <Link
             href="/members"
             className="text-sm font-medium text-foreground underline-offset-4 hover:underline"
           >
-            View all
+            Ver todo
           </Link>
         </AppleCardHeader>
         {overview.members.length === 0 ? (
@@ -128,11 +128,11 @@ export default async function DashboardPage() {
               <EmptyMedia variant="icon">
                 <UsersIcon />
               </EmptyMedia>
-              <EmptyTitle>No members yet</EmptyTitle>
+              <EmptyTitle>Sin miembros aún</EmptyTitle>
             </EmptyHeader>
             <EmptyContent>
               <EmptyDescription>
-                The roster is empty — add members to start tracking the week.
+                La plantilla está vacía — agregá miembros para empezar a seguir la semana.
               </EmptyDescription>
             </EmptyContent>
           </Empty>

@@ -16,19 +16,19 @@ import { addDays, isoDate } from "@/lib/domain/date"
 
 const TYPE_META: Record<TimeOffType, { label: string; className: string }> = {
   vacation: {
-    label: "Vacation",
+    label: "Vacaciones",
     className: "bg-timeoff-vacation/10 text-timeoff-vacation",
   },
   license: {
-    label: "License",
+    label: "Licencia",
     className: "bg-timeoff-license/10 text-timeoff-license",
   },
   sickness: {
-    label: "Sickness",
+    label: "Enfermedad",
     className: "bg-timeoff-sickness/10 text-timeoff-sickness",
   },
   holiday: {
-    label: "Holiday",
+    label: "Feriado",
     className: "bg-timeoff-holiday/10 text-timeoff-holiday",
   },
 }
@@ -39,7 +39,7 @@ function weekDates(): string[] {
 }
 
 function formatDay(dateISO: string): string {
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat("es-AR", {
     weekday: "short",
     month: "short",
     day: "numeric",
@@ -66,8 +66,8 @@ export function WeekStaffing({
       <AppleCard>
         <AppleCardHeader>
           <div>
-            <AppleCardTitle>Who’s out / Who’s available</AppleCardTitle>
-            <p className="mt-1 text-sm text-muted-foreground">Current week staffing.</p>
+            <AppleCardTitle>Ausentes / Disponibles</AppleCardTitle>
+            <p className="mt-1 text-sm text-muted-foreground">Personal de la semana actual.</p>
           </div>
         </AppleCardHeader>
         <Empty className="py-4">
@@ -75,10 +75,10 @@ export function WeekStaffing({
             <EmptyMedia variant="icon">
               <CalendarDaysIcon />
             </EmptyMedia>
-            <EmptyTitle>No active members</EmptyTitle>
+            <EmptyTitle>Sin miembros activos</EmptyTitle>
           </EmptyHeader>
           <EmptyContent>
-            <EmptyDescription>Active members will appear here when available.</EmptyDescription>
+            <EmptyDescription>Los miembros activos aparecerán acá cuando estén disponibles.</EmptyDescription>
           </EmptyContent>
         </Empty>
       </AppleCard>
@@ -89,9 +89,9 @@ export function WeekStaffing({
     <AppleCard>
       <AppleCardHeader>
         <div>
-          <AppleCardTitle>Who’s out / Who’s available</AppleCardTitle>
+          <AppleCardTitle>Ausentes / Disponibles</AppleCardTitle>
           <p className="mt-1 text-sm text-muted-foreground">
-            Approved time off only — pending requests do not change coverage.
+            Solo ausencias aprobadas — las solicitudes pendientes no cambian la cobertura.
           </p>
         </div>
       </AppleCardHeader>
@@ -109,7 +109,7 @@ export function WeekStaffing({
                 <section aria-label={`Who’s out on ${formatDay(date)}`}>
                   <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Who’s out</p>
                   {absentEntries.length === 0 ? (
-                    <p className="mt-2 text-sm text-muted-foreground">No approved time off</p>
+                    <p className="mt-2 text-sm text-muted-foreground">Sin ausencias aprobadas</p>
                   ) : (
                     <ul className="mt-2 space-y-2">
                       {absentEntries.map((entry) => {
@@ -118,7 +118,7 @@ export function WeekStaffing({
                         return (
                           <li key={`${entry.id}-${date}`} className="flex items-center gap-2 text-sm">
                             <span className="size-2 rounded-full bg-ok-amber" aria-hidden />
-                            <span className="min-w-0 truncate text-foreground">{member?.name ?? "Unknown member"}</span>
+                            <span className="min-w-0 truncate text-foreground">{member?.name ?? "Miembro desconocido"}</span>
                             <Badge variant="outline" className={`ml-auto border-transparent ${type.className}`}>
                               {type.label}
                             </Badge>
@@ -132,7 +132,7 @@ export function WeekStaffing({
                 <section aria-label={`Who’s available on ${formatDay(date)}`}>
                   <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Who’s available</p>
                   {availableMembers.length === 0 ? (
-                    <p className="mt-2 text-sm text-muted-foreground">No active members available</p>
+                    <p className="mt-2 text-sm text-muted-foreground">Sin miembros activos disponibles</p>
                   ) : (
                     <ul className="mt-2 space-y-1.5">
                       {availableMembers.map((member) => (

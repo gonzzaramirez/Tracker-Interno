@@ -16,7 +16,7 @@ import { getMembers } from "@/lib/services/members"
 import { getTasksWithProgress } from "@/lib/services/tasks"
 
 export const metadata = {
-  title: "Tasks",
+  title: "Tareas",
 }
 
 export const dynamic = "force-dynamic"
@@ -39,9 +39,9 @@ export default async function TasksPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Tracking"
-        title="Tasks"
-        description="Assign tasks, follow progress 0–100 and keep the completed pile visible."
+        eyebrow="Seguimiento"
+        title="Tareas"
+        description="Asigná tareas, seguí el progreso 0–100 y mantené el pile de completadas visible."
       />
 
       <AppleCard>
@@ -55,11 +55,11 @@ export default async function TasksPage() {
               <EmptyMedia variant="icon">
                 <CheckSquareIcon />
               </EmptyMedia>
-              <EmptyTitle>No tasks yet</EmptyTitle>
+              <EmptyTitle>Sin tareas aún</EmptyTitle>
             </EmptyHeader>
             <EmptyContent>
               <EmptyDescription>
-                Create the first task above and it will appear here, grouped by member.
+                Creá la primera tarea arriba y aparecerá acá, agrupada por miembro.
               </EmptyDescription>
             </EmptyContent>
           </Empty>

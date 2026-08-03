@@ -22,10 +22,10 @@ type TimeOffFormProps = {
 }
 
 const TYPES: Array<{ value: TimeOffType; label: string }> = [
-  { value: "vacation", label: "Vacation" },
-  { value: "license", label: "License" },
-  { value: "sickness", label: "Sickness" },
-  { value: "holiday", label: "Holiday" },
+  { value: "vacation", label: "Vacaciones" },
+  { value: "license", label: "Licencia" },
+  { value: "sickness", label: "Enfermedad" },
+  { value: "holiday", label: "Feriado" },
 ]
 
 /**
@@ -48,7 +48,7 @@ export function TimeOffForm({ members }: TimeOffFormProps) {
         note: String(formData.get("note") ?? "") || undefined,
       })
       if (result.ok) {
-        toast.success("Time off requested")
+        toast.success("Ausencia solicitada")
         formRef.current?.reset()
         setType("vacation")
       } else {
@@ -60,9 +60,9 @@ export function TimeOffForm({ members }: TimeOffFormProps) {
   return (
     <form ref={formRef} action={submit} className="grid gap-4">
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="timeoff-member">Member</Label>
+        <Label htmlFor="timeoff-member">Miembro</Label>
         <Select value={memberId} onValueChange={(value) => setMemberId(value ?? "")}>
-          <SelectTrigger id="timeoff-member" aria-label="Member" className="w-full">
+          <SelectTrigger id="timeoff-member" aria-label="Miembro" className="w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -78,25 +78,25 @@ export function TimeOffForm({ members }: TimeOffFormProps) {
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">
           <label htmlFor="timeoff-start" className="text-sm leading-none font-medium select-none">
-            Start
+            Inicio
           </label>
           <Input id="timeoff-start" name="start" type="date" required />
         </div>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="timeoff-end" className="text-sm leading-none font-medium select-none">
-            End
+            Fin
           </label>
           <Input id="timeoff-end" name="end" type="date" required />
         </div>
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="timeoff-type">Type</Label>
+        <Label htmlFor="timeoff-type">Tipo</Label>
         <Select
           value={type}
           onValueChange={(value) => setType((value as TimeOffType) ?? "vacation")}
         >
-          <SelectTrigger id="timeoff-type" aria-label="Time-off type" className="w-full">
+          <SelectTrigger id="timeoff-type" aria-label="Tipo de ausencia" className="w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -110,17 +110,17 @@ export function TimeOffForm({ members }: TimeOffFormProps) {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="timeoff-note">Note</Label>
-        <Input id="timeoff-note" name="note" placeholder="Note (optional)…" />
+        <Label htmlFor="timeoff-note">Nota</Label>
+        <Input id="timeoff-note" name="note" placeholder="Nota (opcional)…" />
       </div>
 
       <div>
         <Button type="submit" disabled={isPending || !memberId}>
           {isPending ? <Loader2Icon className="size-4 motion-safe:animate-spin motion-reduce:animate-none" aria-hidden /> : null}
-          Request time off
+          Solicitar ausencia
         </Button>
         <p className="mt-2 text-xs text-muted-foreground">
-          New requests stay pending until approved.
+          Las solicitudes nuevas quedan pendientes hasta ser aprobadas.
         </p>
       </div>
     </form>

@@ -31,7 +31,7 @@ export function ProgressControl({ taskId, taskTitle, initialValue }: ProgressCon
     startTransition(async () => {
       const result = await recordProgressAction(taskId, value, note.trim() || undefined)
       if (result.ok) {
-        toast.success("Progress saved")
+        toast.success("Progreso guardado")
         setDraft(null)
         setNote("")
       } else {
@@ -50,21 +50,21 @@ export function ProgressControl({ taskId, taskTitle, initialValue }: ProgressCon
           value={[value]}
           disabled={isPending}
           onValueChange={(next) => setDraft(Array.isArray(next) ? next[0] : next)}
-          aria-label={`Progress for ${taskTitle}`}
+          aria-label={`Progreso de ${taskTitle}`}
         />
         <span className="w-10 shrink-0 text-right text-sm font-medium tabular-nums text-foreground">
           {value}%
         </span>
       </div>
-      <Progress value={value} aria-label={`Progress for ${taskTitle}`} />
+      <Progress value={value} aria-label={`Progreso de ${taskTitle}`} />
       <div className="flex flex-wrap items-center gap-2">
         <Input
           name="progress-note"
           type="text"
           value={note}
           onChange={(event) => setNote(event.target.value)}
-          placeholder="Note for this record (optional)…"
-          aria-label={`Note for progress on ${taskTitle}`}
+          placeholder="Nota para este registro (opcional)…"
+          aria-label={`Nota de progreso para ${taskTitle}`}
           className="h-7 max-w-56 text-xs"
           disabled={isPending}
         />
@@ -76,7 +76,7 @@ export function ProgressControl({ taskId, taskTitle, initialValue }: ProgressCon
           onClick={save}
         >
           {isPending ? <Loader2Icon className="size-3.5 motion-safe:animate-spin motion-reduce:animate-none" aria-hidden /> : <SaveIcon className="size-3.5" aria-hidden />}
-          Save
+          Guardar
         </Button>
       </div>
     </div>

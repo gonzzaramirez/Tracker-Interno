@@ -7,41 +7,41 @@ import type {
 
 const MEMBER_STATUS_META: Record<MemberStatus, { label: string; className: string }> = {
   active: {
-    label: "Active",
+    label: "Activo",
     className: "bg-foreground/5 text-foreground",
   },
   recess: {
-    label: "On recess",
+    label: "En receso",
     className: "bg-indigo-500/10 text-indigo-700 dark:bg-indigo-400/15 dark:text-indigo-300",
   },
 }
 
 const TASK_STATUS_META: Record<TaskStatus, { label: string; className: string }> = {
   queued: {
-    label: "Queued",
+    label: "En cola",
     className: "bg-muted text-muted-foreground",
   },
   "in-progress": {
-    label: "In progress",
+    label: "En progreso",
     className: "bg-blue-500/10 text-blue-700 dark:bg-blue-400/15 dark:text-blue-300",
   },
   done: {
-    label: "Done",
+    label: "Hecho",
     className: "bg-green-500/10 text-green-700 dark:bg-green-400/15 dark:text-green-300",
   },
 }
 
 const PRIORITY_META: Record<TaskPriority, { label: string; className: string }> = {
   low: {
-    label: "Low",
+    label: "Baja",
     className: "bg-muted text-muted-foreground",
   },
   medium: {
-    label: "Medium",
+    label: "Media",
     className: "bg-amber-500/10 text-amber-700 dark:bg-amber-400/15 dark:text-amber-300",
   },
   high: {
-    label: "High",
+    label: "Alta",
     className: "bg-red-500/10 text-red-700 dark:bg-red-400/15 dark:text-red-300",
   },
 }

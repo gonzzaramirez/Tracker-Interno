@@ -23,9 +23,9 @@ type FeedbackFormProps = {
 }
 
 const CATEGORIES: Array<{ value: FeedbackCategory; label: string }> = [
-  { value: "praise", label: "Praise" },
+  { value: "praise", label: "Reconocimiento" },
   { value: "coaching", label: "Coaching" },
-  { value: "concern", label: "Concern" },
+  { value: "concern", label: "Preocupación" },
 ]
 
 /**
@@ -48,7 +48,7 @@ export function FeedbackForm({ members }: FeedbackFormProps) {
         category,
       })
       if (result.ok) {
-        toast.success("Feedback saved")
+        toast.success("Valoración guardada")
         formRef.current?.reset()
         setRating(0)
         setCategory("praise")
@@ -62,9 +62,9 @@ export function FeedbackForm({ members }: FeedbackFormProps) {
     <form ref={formRef} action={submit} className="grid gap-4">
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="feedback-member">Member</Label>
+          <Label htmlFor="feedback-member">Miembro</Label>
           <Select value={memberId} onValueChange={(value) => setMemberId(value ?? "")}>
-            <SelectTrigger id="feedback-member" aria-label="Member" className="w-full">
+            <SelectTrigger id="feedback-member" aria-label="Miembro" className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -77,12 +77,12 @@ export function FeedbackForm({ members }: FeedbackFormProps) {
           </Select>
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="feedback-category">Category</Label>
+          <Label htmlFor="feedback-category">Categoría</Label>
           <Select
             value={category}
             onValueChange={(value) => setCategory((value ?? "praise") as FeedbackCategory)}
           >
-            <SelectTrigger id="feedback-category" aria-label="Category" className="w-full">
+            <SelectTrigger id="feedback-category" aria-label="Categoría" className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -97,7 +97,7 @@ export function FeedbackForm({ members }: FeedbackFormProps) {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <Label id="feedback-rating-label">Rating</Label>
+        <Label id="feedback-rating-label">Calificación</Label>
         <StarRatingInput
           value={rating}
           onChange={setRating}
@@ -106,20 +106,20 @@ export function FeedbackForm({ members }: FeedbackFormProps) {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="feedback-content">Notes</Label>
+        <Label htmlFor="feedback-content">Notas</Label>
         <Textarea
           id="feedback-content"
           name="content"
           rows={3}
           required
-          placeholder="What did this member do well, or where can they grow?"
+          placeholder="Qué hizo bien este miembro, o en qué puede crecer?"
         />
       </div>
 
       <div>
         <Button type="submit" disabled={isPending || rating === 0 || !memberId}>
           {isPending ? <Loader2Icon className="size-4 motion-safe:animate-spin motion-reduce:animate-none" aria-hidden /> : null}
-          Save feedback
+          Guardar valoración
         </Button>
       </div>
     </form>

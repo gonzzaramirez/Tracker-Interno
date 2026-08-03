@@ -26,7 +26,7 @@ export function SnippetForm() {
         description: String(formData.get("description") ?? "") || undefined,
       })
       if (result.ok) {
-        toast.success("Snippet saved")
+        toast.success("Atajo guardado")
         formRef.current?.reset()
         setTitle("")
       } else {
@@ -38,37 +38,37 @@ export function SnippetForm() {
   return (
     <form ref={formRef} action={submit} className="grid gap-4">
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="snippet-title">Title</Label>
+        <Label htmlFor="snippet-title">Título</Label>
         <Input
           id="snippet-title"
           name="title"
-          placeholder="e.g. Weekly standup recap…"
+          placeholder="ej. Resumen del standup semanal…"
           value={title}
           onChange={(event) => setTitle(event.target.value)}
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="snippet-content">Content</Label>
+        <Label htmlFor="snippet-content">Contenido</Label>
         <Textarea
           id="snippet-content"
           name="content"
           rows={4}
           required
-          placeholder="Block of text worth reusing…"
+          placeholder="Bloque de texto para reutilizar…"
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="snippet-description">Description</Label>
+        <Label htmlFor="snippet-description">Descripción</Label>
         <Input
           id="snippet-description"
           name="description"
-          placeholder="Short description (optional)…"
+          placeholder="Descripción corta (opcional)…"
         />
       </div>
       <div>
         <Button type="submit" disabled={isPending || !title.trim()}>
           {isPending ? <Loader2Icon className="size-4 motion-safe:animate-spin motion-reduce:animate-none" aria-hidden /> : null}
-          Add snippet
+          Agregar atajo
         </Button>
       </div>
     </form>

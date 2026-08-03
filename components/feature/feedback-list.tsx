@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils"
 
 const CATEGORY_META: Record<FeedbackCategory, { label: string; className: string }> = {
   praise: {
-    label: "Praise",
+    label: "Reconocimiento",
     className: "bg-green-500/10 text-green-700 dark:bg-green-400/15 dark:text-green-300",
   },
   coaching: {
@@ -22,7 +22,7 @@ const CATEGORY_META: Record<FeedbackCategory, { label: string; className: string
     className: "bg-blue-500/10 text-blue-700 dark:bg-blue-400/15 dark:text-blue-300",
   },
   concern: {
-    label: "Concern",
+    label: "Preocupación",
     className: "bg-red-500/10 text-red-700 dark:bg-red-400/15 dark:text-red-300",
   },
 }
@@ -33,7 +33,7 @@ type FeedbackListProps = {
 }
 
 function formatDate(dateISO: string): string {
-  return new Date(`${dateISO}T00:00:00`).toLocaleDateString("en-US", {
+  return new Date(`${dateISO}T00:00:00`).toLocaleDateString("es-AR", {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -52,11 +52,11 @@ export function FeedbackList({ memberName, entries }: FeedbackListProps) {
           <EmptyMedia variant="icon">
             <MessageSquareTextIcon />
           </EmptyMedia>
-          <EmptyTitle>No feedback for {memberName.split(" ")[0]}</EmptyTitle>
+          <EmptyTitle>Sin valoración para {memberName.split(" ")[0]}</EmptyTitle>
         </EmptyHeader>
         <EmptyContent>
           <EmptyDescription>
-            Submit the first entry with the form on this page.
+            Enviá la primera entrada con el formulario en esta página.
           </EmptyDescription>
         </EmptyContent>
       </Empty>

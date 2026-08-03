@@ -9,7 +9,7 @@ import { getMembers } from "@/lib/services/members"
 import { getByMember, getAverageRating } from "@/lib/services/feedback"
 
 export const metadata: Metadata = {
-  title: "Feedback",
+  title: "Valoración",
 }
 
 export const dynamic = "force-dynamic"
@@ -28,20 +28,20 @@ export default async function FeedbackPage() {
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6">
       <PageHeader
-        title="Feedback"
-        description="Share notes on how each member is doing."
+        title="Valoración"
+        description="Compartí notas sobre cómo le está yendo a cada miembro."
       />
 
       <section aria-labelledby="feedback-new-heading">
         <AppleCard>
-          <AppleCardTitle id="feedback-new-heading">New entry</AppleCardTitle>
+          <AppleCardTitle id="feedback-new-heading">Nueva entrada</AppleCardTitle>
           <FeedbackForm members={members} />
         </AppleCard>
       </section>
 
       <section aria-labelledby="feedback-history-heading">
         <AppleCard>
-          <AppleCardTitle id="feedback-history-heading">History</AppleCardTitle>
+          <AppleCardTitle id="feedback-history-heading">Historial</AppleCardTitle>
           <div className="space-y-8">
               {sections.map(({ member, entries, average }) => (
                 <div key={member.id}>

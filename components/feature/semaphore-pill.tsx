@@ -3,15 +3,15 @@ import { cn } from "@/lib/utils"
 
 const SEMAPHORE_META: Record<Semaphore, { label: string; className: string }> = {
   green: {
-    label: "On track",
+    label: "En camino",
     className: "bg-ok-green/10 text-ok-green",
   },
   yellow: {
-    label: "Needs attention",
+    label: "Necesita atención",
     className: "bg-ok-amber/10 text-ok-amber",
   },
   red: {
-    label: "Blocked",
+    label: "Bloqueado",
     className: "bg-ok-red/10 text-ok-red",
   },
 }
@@ -21,7 +21,7 @@ export function SemaphorePill({ semaphore }: { semaphore: Semaphore | null }) {
     return (
       <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
         <span className="size-1.5 rounded-full bg-current opacity-60" aria-hidden />
-        No signal
+        Sin señal
       </span>
     )
   }

@@ -22,13 +22,13 @@ import type { WeeklyOccupancyPoint } from "@/lib/domain"
 
 const CHART_CONFIG = {
   count: {
-    label: "Absent members",
+    label: "Miembros ausentes",
     color: "var(--chart-1)",
   },
 } satisfies ChartConfig
 
 function formatDate(dateISO: string): string {
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat("es-AR", {
     weekday: "long",
     month: "short",
     day: "numeric",
@@ -43,7 +43,7 @@ function EmptyOccupancy({ message }: { message: string }) {
           <EmptyMedia variant="icon">
             <BarChart3Icon className="size-4" aria-hidden />
           </EmptyMedia>
-          <EmptyTitle>No occupancy data</EmptyTitle>
+          <EmptyTitle>Sin datos de disponibilidad</EmptyTitle>
         </EmptyHeader>
         <EmptyContent>
           <EmptyDescription>{message}</EmptyDescription>
@@ -67,13 +67,13 @@ export function OccupancyChart({
     <AppleCard>
       <AppleCardHeader>
         <div>
-          <AppleCardTitle>Weekly occupancy</AppleCardTitle>
+          <AppleCardTitle>Disponibilidad semanal</AppleCardTitle>
           <p className="mt-1 text-sm text-muted-foreground">
-            Approved absences by day, Monday through Sunday.
+            Ausencias aprobadas por día, de lunes a domingo.
           </p>
         </div>
         <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
-          Approved only
+          Solo aprobadas
         </span>
       </AppleCardHeader>
 
@@ -84,12 +84,12 @@ export function OccupancyChart({
           aria-live="polite"
           aria-busy="true"
         >
-          <span className="text-sm text-muted-foreground">Loading occupancy…</span>
+          <span className="text-sm text-muted-foreground">Cargando disponibilidad…</span>
         </div>
       ) : data.length === 0 ? (
-        <EmptyOccupancy message="The current week has no occupancy records yet." />
+        <EmptyOccupancy message="La semana actual no tiene registros de disponibilidad aún." />
       ) : noApprovedAbsences ? (
-        <EmptyOccupancy message="No approved absences this week." />
+        <EmptyOccupancy message="Sin ausencias aprobadas esta semana." />
       ) : (
         <ChartContainer config={CHART_CONFIG} className="aspect-video min-h-60 w-full">
           <BarChart
@@ -125,7 +125,7 @@ export function OccupancyChart({
             />
             <Bar
               dataKey="count"
-              name="Absent members"
+              name="Miembros ausentes"
               fill="var(--color-count)"
               radius={[8, 8, 0, 0]}
               maxBarSize={52}

@@ -20,25 +20,25 @@ import type { TimeOffEntry, TimeOffType } from "@/lib/domain"
 
 const TYPE_META: Record<TimeOffType, { label: string; className: string }> = {
   vacation: {
-    label: "Vacation",
+    label: "Vacaciones",
     className: "bg-timeoff-vacation/10 text-timeoff-vacation",
   },
   license: {
-    label: "License",
+    label: "Licencia",
     className: "bg-timeoff-license/10 text-timeoff-license",
   },
   sickness: {
-    label: "Sickness",
+    label: "Enfermedad",
     className: "bg-timeoff-sickness/10 text-timeoff-sickness",
   },
   holiday: {
-    label: "Holiday",
+    label: "Feriado",
     className: "bg-timeoff-holiday/10 text-timeoff-holiday",
   },
 }
 
 function formatRange(start: string, end: string): string {
-  const formatter = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" })
+  const formatter = new Intl.DateTimeFormat("es-AR", { month: "short", day: "numeric" })
   const startLabel = formatter.format(new Date(`${start}T00:00:00`))
   const endLabel = formatter.format(new Date(`${end}T00:00:00`))
   return start === end ? startLabel : `${startLabel} – ${endLabel}`
@@ -59,7 +59,7 @@ export function TimeOffApproval({
 
   function transition(id: string, action: "approve" | "reject") {
     setConfirmingId(null)
-    setFeedback("Saving…")
+    setFeedback("Guardando…")
     startTransition(async () => {
       const result =
         action === "approve"
@@ -70,7 +70,7 @@ export function TimeOffApproval({
         toast.error(result.error)
         return
       }
-      const label = action === "approve" ? "Time off approved" : "Time off rejected"
+      const label = action === "approve" ? "Ausencia aprobada" : "Ausencia rechazada"
       setFeedback(label)
       toast.success(label)
       router.refresh()
@@ -81,13 +81,13 @@ export function TimeOffApproval({
     <AppleCard>
       <AppleCardHeader>
         <div>
-          <AppleCardTitle>Pending requests</AppleCardTitle>
+          <AppleCardTitle>Solicitudes pendientes</AppleCardTitle>
           <p className="mt-1 text-sm text-muted-foreground">
-            Review requests before they affect the team schedule.
+            Revisá las solicitudes antes de que afecten el cronograma del equipo.
           </p>
         </div>
         <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
-          {entries.length} pending
+          {entries.length} pendientes
         </span>
       </AppleCardHeader>
 
@@ -97,17 +97,17 @@ export function TimeOffApproval({
             <EmptyMedia variant="icon">
               <CheckIcon />
             </EmptyMedia>
-            <EmptyTitle>No pending requests</EmptyTitle>
+            <EmptyTitle>Sin solicitudes pendientes</EmptyTitle>
           </EmptyHeader>
           <EmptyContent>
-            <EmptyDescription>New requests will appear here for review.</EmptyDescription>
+            <EmptyDescription>Las solicitudes nuevas aparecerán acá para revisión.</EmptyDescription>
           </EmptyContent>
         </Empty>
       ) : (
         <ul className="divide-y divide-foreground/5">
           {entries.map((entry) => {
             const type = TYPE_META[entry.type]
-            const memberName = memberNames[entry.memberId] ?? "Unknown member"
+            const memberName = memberNames[entry.memberId] ?? "Miembro desconocido"
             return (
               <li key={entry.id} className="flex flex-wrap items-center gap-3 py-4 first:pt-0 last:pb-0">
                 <div className="min-w-0 flex-1">
@@ -122,19 +122,19 @@ export function TimeOffApproval({
                     <p className="mt-1 break-words text-xs text-muted-foreground">{entry.note}</p>
                   ) : null}
                 </div>
-                <div role="group" className="flex items-center gap-2" aria-label={`Review request for ${memberName}`}>
+                <div role="group" className="flex items-center gap-2" aria-label={`Revisar solicitud de ${memberName}`}>
                   <Button
                     type="button"
                     size="sm"
                     disabled={isPending}
-                    aria-label={`Approve time off for ${memberName}`}
+                    aria-label={`Aprobar ausencia de ${memberName}`}
                     onClick={() => transition(entry.id, "approve")}
                   >
                     {isPending ? <Loader2Icon className="motion-safe:animate-spin motion-reduce:animate-none" aria-hidden /> : <CheckIcon aria-hidden />}
-                    Approve
+                    Aprobar
                   </Button>
                   {confirmingId === entry.id ? (
-                    <div role="group" aria-label={`Confirm rejection for ${memberName}`} className="flex items-center gap-2">
+                    <div role="group" aria-label={`Confirmar rechazo de ${memberName}`} className="flex items-center gap-2">
                       <Button
                         type="button"
                         size="sm"
@@ -143,7 +143,7 @@ export function TimeOffApproval({
                         onClick={() => transition(entry.id, "reject")}
                       >
                         {isPending ? <Loader2Icon className="motion-safe:animate-spin motion-reduce:animate-none" aria-hidden /> : <XIcon aria-hidden />}
-                        Confirm reject
+                        Confirmar rechazo
                       </Button>
                       <Button
                         type="button"
@@ -152,7 +152,7 @@ export function TimeOffApproval({
                         disabled={isPending}
                         onClick={() => setConfirmingId(null)}
                       >
-                        Cancel
+                        Cancelar
                       </Button>
                     </div>
                   ) : (
@@ -161,11 +161,11 @@ export function TimeOffApproval({
                       size="sm"
                       variant="destructive"
                       disabled={isPending}
-                      aria-label={`Reject time off for ${memberName}`}
+                      aria-label={`Rechazar ausencia de ${memberName}`}
                       onClick={() => setConfirmingId(entry.id)}
                     >
                       <XIcon aria-hidden />
-                      Reject
+                      Rechazar
                     </Button>
                   )}
                 </div>

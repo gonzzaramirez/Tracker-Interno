@@ -14,7 +14,7 @@ import {
 import { getMembers } from "@/lib/services/members"
 
 export const metadata = {
-  title: "Members",
+  title: "Miembros",
 }
 
 export const dynamic = "force-dynamic"
@@ -26,9 +26,9 @@ export default async function MembersPage() {
   return (
     <div>
       <PageHeader
-        eyebrow="Roster"
-        title="Members"
-        description="Who's in the team, their role, status and current-week highlights."
+        eyebrow="Plantilla"
+        title="Miembros"
+        description="Quiénes forman parte del equipo, su rol, estado y destacados de la semana actual."
       />
 
       <AppleCard>
@@ -38,11 +38,11 @@ export default async function MembersPage() {
               <EmptyMedia variant="icon">
                 <UsersIcon />
               </EmptyMedia>
-              <EmptyTitle>No members yet</EmptyTitle>
+              <EmptyTitle>Sin miembros aún</EmptyTitle>
             </EmptyHeader>
             <EmptyContent>
               <EmptyDescription>
-                The roster is empty — members will appear here once added.
+                La plantilla está vacía — los miembros aparecerán acá una vez agregados.
               </EmptyDescription>
             </EmptyContent>
           </Empty>

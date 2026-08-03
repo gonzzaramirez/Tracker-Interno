@@ -22,10 +22,10 @@ const TYPE_DOT_CLASSES: Record<TimeOffEntry["type"], string> = {
 }
 
 const TYPE_LABELS: Record<TimeOffEntry["type"], string> = {
-  vacation: "Vacation",
-  license: "License",
-  sickness: "Sickness",
-  holiday: "Holiday",
+  vacation: "Vacaciones",
+  license: "Licencia",
+  sickness: "Enfermedad",
+  holiday: "Feriado",
 }
 
 type CalendarDayContext = {
@@ -51,23 +51,23 @@ function CalendarDayButton(props: DayButtonProps) {
   const approved = context?.approvedByDate[day.isoDate] ?? []
   const pending = context?.pendingByDate[day.isoDate] ?? []
   const memberNames = context?.memberNames ?? {}
-  const approvedNames = approved.map((entry) => memberNames[entry.memberId] ?? "Unknown")
-  const pendingNames = pending.map((entry) => memberNames[entry.memberId] ?? "Unknown")
+  const approvedNames = approved.map((entry) => memberNames[entry.memberId] ?? "Desconocido")
+  const pendingNames = pending.map((entry) => memberNames[entry.memberId] ?? "Desconocido")
   const approvedDetails = approved.map(
-    (entry, index) => `${TYPE_LABELS[entry.type]} approved for ${approvedNames[index]}`,
+    (entry, index) => `${TYPE_LABELS[entry.type]} aprobada para ${approvedNames[index]}`,
   )
   const pendingDetails = pending.map(
-    (entry, index) => `${TYPE_LABELS[entry.type]} pending for ${pendingNames[index]}`,
+    (entry, index) => `${TYPE_LABELS[entry.type]} pendiente para ${pendingNames[index]}`,
   )
-  const dateLabel = `${new Intl.DateTimeFormat("en-US", {
+  const dateLabel = `${new Intl.DateTimeFormat("es-AR", {
     weekday: "long",
     month: "long",
     day: "numeric",
-  }).format(day.date)}${modifiers.today ? ", today" : ""}`
+  }).format(day.date)}${modifiers.today ? ", hoy" : ""}`
   const accessibleLabel = [dateLabel, ...approvedDetails, ...pendingDetails].join(". ")
   const title = [
-    approvedNames.length > 0 ? `Approved: ${approvedNames.join(", ")}` : "",
-    pendingNames.length > 0 ? `Pending: ${pendingNames.join(", ")}` : "",
+    approvedNames.length > 0 ? `Aprobado: ${approvedNames.join(", ")}` : "",
+    pendingNames.length > 0 ? `Pendiente: ${pendingNames.join(", ")}` : "",
   ]
     .filter(Boolean)
     .join(" · ")
@@ -137,7 +137,7 @@ export function TimeOffCalendar({ entries, memberNames }: TimeOffCalendarProps) 
           showOutsideDays={false}
         />
         <p className="mt-2 text-xs text-muted-foreground">
-          Solid dots mark approved time off. Dashed markers are pending requests.
+          Los puntos sólidos marcan ausencias aprobadas. Los marcadores punteados son solicitudes pendientes.
         </p>
       </div>
     </CalendarDayContext.Provider>

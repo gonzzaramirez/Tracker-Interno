@@ -21,7 +21,7 @@ import type { CheckInReminder, Semaphore } from "@/lib/domain"
 import { cn } from "@/lib/utils"
 
 function formatDueDate(dateISO: string): string {
-  return new Date(`${dateISO}T00:00:00`).toLocaleDateString("en-US", {
+  return new Date(`${dateISO}T00:00:00`).toLocaleDateString("es-AR", {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -29,9 +29,9 @@ function formatDueDate(dateISO: string): string {
 }
 
 const SEMAPHORE_OPTIONS: Array<{ value: Semaphore; label: string }> = [
-  { value: "green", label: "Green" },
-  { value: "yellow", label: "Yellow" },
-  { value: "red", label: "Red" },
+  { value: "green", label: "Verde" },
+  { value: "yellow", label: "Amarillo" },
+  { value: "red", label: "Rojo" },
 ]
 
 /** In-app reminder for members whose scheduled check-in is due. */
@@ -56,7 +56,7 @@ export function CheckInBanner({ reminders }: { reminders: CheckInReminder[] }) {
         toast.error(result.error)
         return
       }
-      toast.success(`Check-in completed for ${memberName}`)
+      toast.success(`Check-in completado para ${memberName}`)
       setNotes((current) => {
         const next = { ...current }
         delete next[memberId]
@@ -79,14 +79,14 @@ export function CheckInBanner({ reminders }: { reminders: CheckInReminder[] }) {
             <Clock3Icon className="size-4" aria-hidden />
           </span>
           <div>
-            <AppleCardTitle>Check-ins due</AppleCardTitle>
+            <AppleCardTitle>Check-ins pendientes</AppleCardTitle>
             <p className="mt-1 text-sm text-muted-foreground">
-              Keep the follow-up rhythm moving for each member.
+              Mantené el ritmo de seguimiento para cada miembro.
             </p>
           </div>
         </div>
         <span className="rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-700 dark:text-amber-300">
-          {reminders.length} pending
+          {reminders.length} pendientes
         </span>
       </AppleCardHeader>
 
@@ -107,7 +107,7 @@ export function CheckInBanner({ reminders }: { reminders: CheckInReminder[] }) {
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold text-foreground">{member.name}</p>
               <p className="text-xs text-muted-foreground">
-                {state === "overdue" ? "Overdue" : "Due today"} · {formatDueDate(dueDate)}
+                {state === "overdue" ? "Vencido" : "Vence hoy"} · {formatDueDate(dueDate)}
               </p>
             </div>
             <span
@@ -118,7 +118,7 @@ export function CheckInBanner({ reminders }: { reminders: CheckInReminder[] }) {
                   : "bg-blue-500/10 text-blue-700 dark:bg-blue-400/15 dark:text-blue-300",
               )}
             >
-              {state === "overdue" ? "Overdue" : "Due"}
+              {state === "overdue" ? "Vencido" : "Pendiente"}
             </span>
             <SemaphorePill semaphore={lastSemaphore} />
             <Select
@@ -131,7 +131,7 @@ export function CheckInBanner({ reminders }: { reminders: CheckInReminder[] }) {
             >
               <SelectTrigger
                 size="sm"
-                aria-label={`Semaphore for ${member.name}`}
+                aria-label={`Semáforo para ${member.name}`}
                 disabled={isPending}
               >
                 <SelectValue />
@@ -150,8 +150,8 @@ export function CheckInBanner({ reminders }: { reminders: CheckInReminder[] }) {
               onChange={(event) =>
                 setNotes((current) => ({ ...current, [member.id]: event.target.value }))
               }
-              placeholder="Optional note…"
-              aria-label={`Optional note for ${member.name}`}
+              placeholder="Nota opcional…"
+              aria-label={`Nota opcional para ${member.name}`}
               className="h-7 min-w-40 max-w-52 text-xs"
               disabled={isPending}
             />
@@ -160,11 +160,11 @@ export function CheckInBanner({ reminders }: { reminders: CheckInReminder[] }) {
               size="sm"
               variant="outline"
               disabled={isPending}
-              aria-label={`Mark check-in done for ${member.name}`}
+              aria-label={`Marcar check-in como hecho para ${member.name}`}
               onClick={() => markDone(member.id, member.name)}
             >
               {isPending ? <Loader2Icon className="motion-safe:animate-spin motion-reduce:animate-none" aria-hidden /> : <CheckCircle2Icon aria-hidden />}
-              Mark done
+              Marcar como hecho
             </Button>
           </li>
         ))}

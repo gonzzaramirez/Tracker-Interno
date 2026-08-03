@@ -14,12 +14,12 @@ import {
 import { cn } from "@/lib/utils"
 
 const NAV_ITEMS = [
-  { href: "/", label: "Overview", icon: LayoutDashboardIcon, exact: true },
-  { href: "/members", label: "Members", icon: UsersIcon },
-  { href: "/tasks", label: "Tasks", icon: CheckSquareIcon },
-  { href: "/feedback", label: "Feedback", icon: MessageSquareTextIcon },
-  { href: "/snippets", label: "Snippets", icon: Code2Icon },
-  { href: "/calendar", label: "Calendar", icon: CalendarDaysIcon },
+  { href: "/", label: "Panel", icon: LayoutDashboardIcon, exact: true },
+  { href: "/members", label: "Miembros", icon: UsersIcon },
+  { href: "/tasks", label: "Tareas", icon: CheckSquareIcon },
+  { href: "/feedback", label: "Valoración", icon: MessageSquareTextIcon },
+  { href: "/snippets", label: "Atajos", icon: Code2Icon },
+  { href: "/calendar", label: "Calendario", icon: CalendarDaysIcon },
 ] as const
 
 function isActive(pathname: string, href: string, exact?: boolean) {
@@ -37,7 +37,7 @@ export function AppNav() {
       >
         <Link
           href="/"
-          aria-label="Team Tracker home"
+          aria-label="Inicio de Team Tracker"
           className="mr-4 flex items-center gap-2 text-sm font-semibold tracking-tight text-foreground"
         >
           <span className="flex size-7 items-center justify-center rounded-lg bg-foreground text-background">

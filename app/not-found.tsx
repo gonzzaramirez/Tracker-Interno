@@ -19,15 +19,15 @@ export default function NotFound() {
           <EmptyMedia variant="icon">
             <LayoutDashboardIcon />
           </EmptyMedia>
-          <EmptyTitle>Page not found</EmptyTitle>
+          <EmptyTitle>Página no encontrada</EmptyTitle>
         </EmptyHeader>
         <EmptyContent>
           <EmptyDescription>
-            The page or team member you&apos;re looking for doesn&apos;t exist —
-            it may have been removed or the link is wrong.
+            La página o el miembro del equipo que buscás no existe —
+            puede que se haya eliminado o el enlace sea incorrecto.
           </EmptyDescription>
           <Button render={<Link href="/" />} className="mt-2">
-            Back to overview
+            Volver al panel
           </Button>
         </EmptyContent>
       </Empty>

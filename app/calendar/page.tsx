@@ -17,7 +17,7 @@ import {
 import type { TimeOffType } from "@/lib/domain"
 
 export const metadata: Metadata = {
-  title: "Calendar",
+  title: "Calendario",
 }
 
 export const dynamic = "force-dynamic"
@@ -25,19 +25,19 @@ export const runtime = "nodejs"
 
 const TYPE_META: Record<TimeOffType, { label: string; className: string }> = {
   vacation: {
-    label: "Vacation",
+    label: "Vacaciones",
     className: "bg-timeoff-vacation/10 text-timeoff-vacation",
   },
   license: {
-    label: "License",
+    label: "Licencia",
     className: "bg-timeoff-license/10 text-timeoff-license",
   },
   sickness: {
-    label: "Sickness",
+    label: "Enfermedad",
     className: "bg-timeoff-sickness/10 text-timeoff-sickness",
   },
   holiday: {
-    label: "Holiday",
+    label: "Feriado",
     className: "bg-timeoff-holiday/10 text-timeoff-holiday",
   },
 }
@@ -45,8 +45,8 @@ const TYPE_META: Record<TimeOffType, { label: string; className: string }> = {
 function formatRange(start: string, end: string): string {
   const startDate = new Date(`${start}T00:00:00`)
   const endDate = new Date(`${end}T00:00:00`)
-  const startLabel = startDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })
-  const endLabel = endDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+  const startLabel = startDate.toLocaleDateString("es-AR", { month: "short", day: "numeric" })
+  const endLabel = endDate.toLocaleDateString("es-AR", { month: "short", day: "numeric" })
   return start === end ? startLabel : `${startLabel} – ${endLabel}`
 }
 
@@ -59,24 +59,24 @@ export default async function CalendarPage() {
   ])
 
   const memberNames = Object.fromEntries(members.map((member) => [member.id, member.name]))
-  const nameOf = (id: string) => memberNames[id] ?? "Unknown"
+  const nameOf = (id: string) => memberNames[id] ?? "Desconocido"
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6">
       <PageHeader
-        eyebrow="Calendar"
-        title="Calendar"
-        description="Who's away and when — plan coverage before it matters."
+        eyebrow="Calendario"
+        title="Calendario"
+        description="Quiénes están ausentes y cuándo — planificá la cobertura antes de que importe."
       />
 
       <section aria-labelledby="calendar-view-heading" className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
         <AppleCard>
-          <AppleCardTitle id="calendar-view-heading">Time off</AppleCardTitle>
+          <AppleCardTitle id="calendar-view-heading">Ausencias</AppleCardTitle>
           <TimeOffCalendar entries={entries} memberNames={memberNames} />
         </AppleCard>
 
         <AppleCard className="lg:sticky lg:top-24">
-          <AppleCardTitle>Request time off</AppleCardTitle>
+          <AppleCardTitle>Solicitar ausencia</AppleCardTitle>
           <TimeOffForm members={members} />
         </AppleCard>
       </section>
@@ -87,9 +87,9 @@ export default async function CalendarPage() {
 
       <section aria-labelledby="calendar-upcoming-heading">
         <AppleCard>
-          <AppleCardTitle id="calendar-upcoming-heading">Upcoming time off</AppleCardTitle>
+          <AppleCardTitle id="calendar-upcoming-heading">Ausencias próximas</AppleCardTitle>
           {upcoming.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No upcoming time off booked.</p>
+            <p className="text-sm text-muted-foreground">No hay ausencias programadas.</p>
           ) : (
             <ul className="space-y-3">
               {upcoming.map((entry) => {
@@ -114,7 +114,7 @@ export default async function CalendarPage() {
                             : "border-ok-green/30 bg-ok-green/10 text-ok-green"
                         }
                       >
-                        {entry.status === "pending" ? "Pending" : "Approved"}
+                        {entry.status === "pending" ? "Pendiente" : "Aprobado"}
                       </Badge>
                       <span className="text-xs tabular-nums text-muted-foreground">
                         {formatRange(entry.startDate, entry.endDate)}
