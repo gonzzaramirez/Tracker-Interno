@@ -4,15 +4,15 @@ import { cn } from "@/lib/utils"
 const SEMAPHORE_META: Record<Semaphore, { label: string; className: string }> = {
   green: {
     label: "On track",
-    className: "bg-green-500/10 text-green-700 dark:bg-green-400/15 dark:text-green-300",
+    className: "bg-ok-green/10 text-ok-green",
   },
   yellow: {
     label: "Needs attention",
-    className: "bg-amber-500/10 text-amber-700 dark:bg-amber-400/15 dark:text-amber-300",
+    className: "bg-ok-amber/10 text-ok-amber",
   },
   red: {
     label: "Blocked",
-    className: "bg-red-500/10 text-red-700 dark:bg-red-400/15 dark:text-red-300",
+    className: "bg-ok-red/10 text-ok-red",
   },
 }
 

@@ -1,23 +1,55 @@
 "use server"
 
 /**
- * Time-off Server Action (task 7.2) — creates a pending SQLite entry and
- * refreshes the calendar/dashboard pages (REQ-CC-002).
+ * Time-off Server Actions — request, approve and reject persisted entries.
  */
 
 import { revalidatePath } from "next/cache"
 
 import type { TimeOffEntry } from "@/lib/domain"
-import { requestTimeOff, type RequestTimeOffInput } from "@/lib/services/calendar"
+import {
+  approveTimeOff,
+  rejectTimeOff,
+  requestTimeOff,
+  type RequestTimeOffInput,
+} from "@/lib/services/timeoff"
 import { runActionResult, type ActionResult } from "@/lib/actions/result"
+
+function revalidateTimeOffPaths(memberId?: string): void {
+  revalidatePath("/calendar")
+  revalidatePath("/")
+  revalidatePath("/members")
+  if (memberId) {
+    revalidatePath(`/members/${memberId}`)
+  }
+}
 
 export async function requestTimeOffAction(
   input: RequestTimeOffInput
 ): Promise<ActionResult<TimeOffEntry>> {
   const result = await runActionResult(() => requestTimeOff(input))
   if (result.ok) {
-    revalidatePath("/calendar")
-    revalidatePath("/")
+    revalidateTimeOffPaths(input.memberId)
+  }
+  return result
+}
+
+export async function approveTimeOffAction(
+  id: string,
+): Promise<ActionResult<TimeOffEntry>> {
+  const result = await runActionResult(() => approveTimeOff(id))
+  if (result.ok) {
+    revalidateTimeOffPaths(result.data.memberId)
+  }
+  return result
+}
+
+export async function rejectTimeOffAction(
+  id: string,
+): Promise<ActionResult<TimeOffEntry>> {
+  const result = await runActionResult(() => rejectTimeOff(id))
+  if (result.ok) {
+    revalidateTimeOffPaths(result.data.memberId)
   }
   return result
 }

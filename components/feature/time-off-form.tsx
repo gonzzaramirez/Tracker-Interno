@@ -115,6 +115,9 @@ export function TimeOffForm({ members }: TimeOffFormProps) {
           {isPending ? <Loader2Icon className="size-4 animate-spin" /> : null}
           Request time off
         </Button>
+        <p className="mt-2 text-xs text-muted-foreground">
+          New requests stay pending until approved.
+        </p>
       </div>
     </form>
   )

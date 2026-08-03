@@ -3,11 +3,17 @@ import type { Metadata } from "next"
 import { PageHeader } from "@/components/layout/page-header"
 import { TimeOffCalendar } from "@/components/feature/time-off-calendar"
 import { TimeOffForm } from "@/components/feature/time-off-form"
+import { TimeOffApproval } from "@/components/feature/time-off-approval"
+import { WeekStaffing } from "@/components/feature/week-staffing"
 import { AppleCard, AppleCardTitle } from "@/components/feature/card"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { getMembers } from "@/lib/services/members"
-import { getTimeOffEntries, getUpcomingTimeOffEntries } from "@/lib/services/calendar"
+import {
+  getPendingTimeOff,
+  getTimeOffEntries,
+  getUpcomingTimeOffEntries,
+} from "@/lib/services/timeoff"
 import type { TimeOffType } from "@/lib/domain"
 
 export const metadata: Metadata = {
@@ -20,19 +26,19 @@ export const runtime = "nodejs"
 const TYPE_META: Record<TimeOffType, { label: string; className: string }> = {
   vacation: {
     label: "Vacation",
-    className: "bg-blue-500/10 text-blue-700 dark:bg-blue-400/15 dark:text-blue-300",
+    className: "bg-timeoff-vacation/10 text-timeoff-vacation",
   },
   license: {
     label: "License",
-    className: "bg-teal-500/10 text-teal-700 dark:bg-teal-400/15 dark:text-teal-300",
+    className: "bg-timeoff-license/10 text-timeoff-license",
   },
   sickness: {
     label: "Sickness",
-    className: "bg-amber-500/10 text-amber-700 dark:bg-amber-400/15 dark:text-amber-300",
+    className: "bg-timeoff-sickness/10 text-timeoff-sickness",
   },
   holiday: {
     label: "Holiday",
-    className: "bg-purple-500/10 text-purple-700 dark:bg-purple-400/15 dark:text-purple-300",
+    className: "bg-timeoff-holiday/10 text-timeoff-holiday",
   },
 }
 
@@ -45,10 +51,11 @@ function formatRange(start: string, end: string): string {
 }
 
 export default async function CalendarPage() {
-  const [members, entries, upcoming] = await Promise.all([
+  const [members, entries, upcoming, pending] = await Promise.all([
     getMembers(),
     getTimeOffEntries(),
     getUpcomingTimeOffEntries(),
+    getPendingTimeOff(),
   ])
 
   const memberNames = Object.fromEntries(members.map((member) => [member.id, member.name]))
@@ -74,6 +81,10 @@ export default async function CalendarPage() {
         </AppleCard>
       </section>
 
+      <TimeOffApproval entries={pending} memberNames={memberNames} />
+
+      <WeekStaffing members={members} entries={entries} />
+
       <section aria-labelledby="calendar-upcoming-heading">
         <AppleCard>
           <AppleCardTitle id="calendar-upcoming-heading">Upcoming time off</AppleCardTitle>
@@ -94,6 +105,16 @@ export default async function CalendarPage() {
                     <div className="flex items-center gap-2">
                       <Badge variant="outline" className={cn("border-transparent", meta.className)}>
                         {meta.label}
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className={
+                          entry.status === "pending"
+                            ? "border-ok-amber/30 bg-ok-amber/10 text-ok-amber"
+                            : "border-ok-green/30 bg-ok-green/10 text-ok-green"
+                        }
+                      >
+                        {entry.status === "pending" ? "Pending" : "Approved"}
                       </Badge>
                       <span className="text-xs tabular-nums text-muted-foreground">
                         {formatRange(entry.startDate, entry.endDate)}

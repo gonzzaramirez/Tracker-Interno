@@ -9,7 +9,7 @@ import { randomUUID } from "node:crypto"
 import { getDb } from "../connection"
 import type { TimeOffRow, TimeOffStatus, TimeOffType } from "../schema"
 import type { TimeOffEntry } from "@/lib/domain"
-import { todayISO } from "@/lib/domain/date"
+import { isISODate, todayISO } from "@/lib/domain/date"
 
 export type StoredTimeOffEntry = TimeOffEntry
 
@@ -52,6 +52,9 @@ export async function getTimeOffById(id: string): Promise<StoredTimeOffEntry | u
 }
 
 export async function insertTimeOff(input: NewTimeOff): Promise<StoredTimeOffEntry> {
+  if (!isISODate(input.startDate) || !isISODate(input.endDate)) {
+    throw new RangeError("Time-off dates must use the YYYY-MM-DD format.")
+  }
   if (input.endDate < input.startDate) {
     throw new RangeError("The end date cannot be before the start date.")
   }

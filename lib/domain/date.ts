@@ -22,6 +22,21 @@ export function todayISO(): string {
   return isoDate(new Date())
 }
 
+/** Whether a value is a real calendar date in YYYY-MM-DD form. */
+export function isISODate(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return false
+  }
+
+  const [year, month, day] = value.split("-").map(Number)
+  const date = new Date(year, month - 1, day)
+  return (
+    date.getFullYear() === year &&
+    date.getMonth() === month - 1 &&
+    date.getDate() === day
+  )
+}
+
 /** Add calendar days to an ISO date without introducing a timezone offset. */
 export function addDays(dateISO: string, days: number): string {
   const [year, month, day] = dateISO.split("-").map(Number)
