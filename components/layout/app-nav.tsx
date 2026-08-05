@@ -5,20 +5,24 @@ import { usePathname } from "next/navigation"
 import {
   CalendarDaysIcon,
   CheckSquareIcon,
-  Code2Icon,
-  MessageSquareTextIcon,
+  FingerprintIcon,
+  KeyRoundIcon,
   LayoutDashboardIcon,
+  LogOutIcon,
+  MessageSquareTextIcon,
   UsersIcon,
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { signOutAction } from "@/lib/actions/auth"
+import { Button } from "@/components/ui/button"
 
 const NAV_ITEMS = [
   { href: "/", label: "Panel", icon: LayoutDashboardIcon, exact: true },
   { href: "/members", label: "Miembros", icon: UsersIcon },
+  { href: "/asistencias", label: "Asistencias", icon: FingerprintIcon },
+  { href: "/tracking", label: "Seguimiento", icon: MessageSquareTextIcon },
   { href: "/tasks", label: "Tareas", icon: CheckSquareIcon },
-  { href: "/feedback", label: "Valoración", icon: MessageSquareTextIcon },
-  { href: "/snippets", label: "Atajos", icon: Code2Icon },
   { href: "/calendar", label: "Calendario", icon: CalendarDaysIcon },
 ] as const
 
@@ -26,44 +30,43 @@ function isActive(pathname: string, href: string, exact?: boolean) {
   return exact ? pathname === href : pathname === href || pathname.startsWith(`${href}/`)
 }
 
-export function AppNav() {
+export function AppNav({ username }: { username: string }) {
   const pathname = usePathname()
 
   return (
     <header className="sticky top-0 z-40 border-b border-foreground/5 bg-background/70 backdrop-blur-xl">
-      <nav
-        aria-label="Primary navigation"
-        className="mx-auto flex w-full max-w-5xl items-center gap-1 px-4 py-3 sm:px-6 lg:px-8"
-      >
-        <Link
-          href="/"
-          aria-label="Inicio de Team Tracker"
-          className="mr-4 flex items-center gap-2 text-sm font-semibold tracking-tight text-foreground"
-        >
+      <nav aria-label="Navegación principal" className="mx-auto flex w-full max-w-5xl items-center gap-1 px-4 py-3 sm:px-6 lg:px-8">
+        <Link href="/" aria-label="Inicio" className="mr-4 flex items-center gap-2 text-sm font-semibold tracking-tight text-foreground">
           <span className="flex size-7 items-center justify-center rounded-lg bg-foreground text-background">
             <LayoutDashboardIcon className="size-4" aria-hidden="true" />
           </span>
-          <span className="hidden sm:inline">Team Tracker</span>
+          <span className="hidden sm:inline">Tracker</span>
         </Link>
         <div className="flex items-center gap-1 overflow-x-auto">
           {NAV_ITEMS.map((item) => {
             const active = isActive(pathname, item.href, "exact" in item && item.exact)
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                aria-label={item.label}
-                aria-current={active ? "page" : undefined}
+              <Link key={item.href} href={item.href} aria-label={item.label} aria-current={active ? "page" : undefined}
                 className={cn(
                   "flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
-                  active && "bg-foreground/5 text-foreground"
-                )}
-              >
+                  active && "bg-foreground/5 text-foreground",
+                )}>
                 <item.icon className="size-4" aria-hidden="true" />
                 <span className="hidden md:inline">{item.label}</span>
               </Link>
             )
           })}
+        </div>
+        <div className="ml-auto flex items-center gap-2">
+          <Link href="/profile" className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
+            <KeyRoundIcon className="size-4" aria-hidden />
+            <span className="hidden sm:inline">{username}</span>
+          </Link>
+          <form action={signOutAction}>
+            <Button type="submit" variant="ghost" size="icon" aria-label="Cerrar sesión">
+              <LogOutIcon className="size-4" />
+            </Button>
+          </form>
         </div>
       </nav>
     </header>

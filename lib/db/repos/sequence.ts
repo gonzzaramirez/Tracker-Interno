@@ -1,6 +1,6 @@
 import type { DatabaseSync } from "node:sqlite"
 
-type SequenceTable = "task_progress" | "feedback" | "snippets"
+type SequenceTable = "tracking_records"
 
 type SequenceRow = {
   next_sequence: number
@@ -10,15 +10,6 @@ type SequenceRow = {
 export function nextSequence(db: DatabaseSync, table: SequenceTable): number {
   const row = db
     .prepare(`SELECT COALESCE(MAX(created_sequence), 0) + 1 AS next_sequence FROM ${table}`)
-    .get() as SequenceRow
-  return row.next_sequence
-}
-
-export function nextSnippetUsageSequence(db: DatabaseSync): number {
-  const row = db
-    .prepare(
-      "SELECT COALESCE(MAX(last_used_sequence), 0) + 1 AS next_sequence FROM snippets",
-    )
     .get() as SequenceRow
   return row.next_sequence
 }

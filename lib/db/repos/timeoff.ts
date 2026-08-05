@@ -1,102 +1,41 @@
 /**
- * Time-off repository (task 1.6) — raw SQL over the shared connection.
- *
- * Approve/reject mutate a row only while it is still `pending`, so a stale
- * request cannot double-approve (design D5).
+ * Time-off repository — per-tenant absences.
  */
 import { randomUUID } from "node:crypto"
 
 import { getDb } from "../connection"
-import type { TimeOffRow, TimeOffStatus, TimeOffType } from "../schema"
-import type { TimeOffEntry } from "@/lib/domain"
-import { isISODate, todayISO } from "@/lib/domain/date"
+import type { TimeOffRow } from "../schema"
+import type { TimeOff, TimeOffStatus, TimeOffType } from "@/lib/domain"
+import { todayISO } from "@/lib/domain/date"
 
-export type StoredTimeOffEntry = TimeOffEntry
+export type NewTimeOff = { memberId: string; startDate: string; endDate: string; type: TimeOffType; note?: string }
+export type UpdateTimeOff = { status: TimeOffStatus }
 
-function toEntry(row: TimeOffRow): StoredTimeOffEntry {
-  return {
-    id: row.id,
-    memberId: row.member_id,
-    startDate: row.start_date,
-    endDate: row.end_date,
-    type: row.type as TimeOffType,
-    status: row.status as TimeOffStatus,
-    note: row.note ?? undefined,
-    createdAt: row.created_at,
-  }
+function toTimeOff(row: TimeOffRow): TimeOff {
+  return { id: row.id, memberId: row.member_id, startDate: row.start_date, endDate: row.end_date, type: row.type as TimeOffType, status: row.status as TimeOffStatus, note: row.note ?? undefined, createdAt: row.created_at }
 }
 
-export type NewTimeOff = Omit<TimeOffEntry, "id" | "createdAt" | "status"> & {
-  status?: TimeOffStatus
+export async function listTimeOffByMember(userId: string, memberId: string): Promise<TimeOff[]> {
+  const rows = getDb().prepare("SELECT * FROM time_off WHERE user_id = ? AND member_id = ? ORDER BY start_date DESC").all(userId, memberId) as TimeOffRow[]
+  return rows.map(toTimeOff)
 }
 
-export async function listTimeOff(): Promise<StoredTimeOffEntry[]> {
-  const rows = getDb()
-    .prepare("SELECT * FROM time_off ORDER BY start_date ASC, created_at ASC")
-    .all() as TimeOffRow[]
-  return rows.map(toEntry)
-}
-
-export async function listTimeOffByMember(memberId: string): Promise<StoredTimeOffEntry[]> {
-  const rows = getDb()
-    .prepare("SELECT * FROM time_off WHERE member_id = ? ORDER BY start_date ASC")
-    .all(memberId) as TimeOffRow[]
-  return rows.map(toEntry)
-}
-
-export async function getTimeOffById(id: string): Promise<StoredTimeOffEntry | undefined> {
-  const row = getDb().prepare("SELECT * FROM time_off WHERE id = ?").get(id) as
-    | TimeOffRow
-    | undefined
-  return row ? toEntry(row) : undefined
-}
-
-export async function insertTimeOff(input: NewTimeOff): Promise<StoredTimeOffEntry> {
-  if (!isISODate(input.startDate) || !isISODate(input.endDate)) {
-    throw new RangeError("Time-off dates must use the YYYY-MM-DD format.")
-  }
-  if (input.endDate < input.startDate) {
-    throw new RangeError("The end date cannot be before the start date.")
-  }
-
+export async function insertTimeOff(userId: string, input: NewTimeOff): Promise<TimeOff> {
   const id = randomUUID()
-  const createdAt = todayISO()
-  getDb()
-    .prepare(
-      `INSERT INTO time_off (id, member_id, start_date, end_date, type, status, note, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-    )
-    .run(
-      id,
-      input.memberId,
-      input.startDate,
-      input.endDate,
-      input.type,
-      input.status ?? "pending",
-      input.note ?? null,
-      createdAt
-    )
-  const row = getDb().prepare("SELECT * FROM time_off WHERE id = ?").get(id) as
-    | TimeOffRow
-    | undefined
-  if (!row) {
-    throw new Error(`Time-off entry ${id} could not be read after insert.`)
-  }
-  return toEntry(row)
+  const createdAt = new Date().toISOString()
+  getDb().prepare("INSERT INTO time_off (id, user_id, member_id, start_date, end_date, type, status, note, created_at) VALUES (?, ?, ?, ?, ?, ?, 'pending', ?, ?)").run(id, userId, input.memberId, input.startDate, input.endDate, input.type, input.note ?? null, createdAt)
+  const row = getDb().prepare("SELECT * FROM time_off WHERE user_id = ? AND id = ?").get(userId, id) as TimeOffRow | undefined
+  if (!row) throw new Error(`Time-off ${id} could not be read after insert.`)
+  return toTimeOff(row)
 }
 
-/** Approves a pending entry; false when it is gone/stale (never double-approve). */
-export async function approveTimeOff(id: string): Promise<boolean> {
-  const result = getDb()
-    .prepare("UPDATE time_off SET status = 'approved' WHERE id = ? AND status = 'pending'")
-    .run(id)
-  return Number(result.changes) > 0
+export async function updateTimeOffStatus(userId: string, id: string, status: TimeOffStatus): Promise<TimeOff | undefined> {
+  getDb().prepare("UPDATE time_off SET status = ? WHERE user_id = ? AND id = ?").run(status, userId, id)
+  const row = getDb().prepare("SELECT * FROM time_off WHERE user_id = ? AND id = ?").get(userId, id) as TimeOffRow | undefined
+  return row ? toTimeOff(row) : undefined
 }
 
-/** Rejects a pending entry; false when it is gone/stale. */
-export async function rejectTimeOff(id: string): Promise<boolean> {
-  const result = getDb()
-    .prepare("UPDATE time_off SET status = 'rejected' WHERE id = ? AND status = 'pending'")
-    .run(id)
+export async function deleteTimeOff(userId: string, id: string): Promise<boolean> {
+  const result = getDb().prepare("DELETE FROM time_off WHERE user_id = ? AND id = ?").run(userId, id)
   return Number(result.changes) > 0
 }

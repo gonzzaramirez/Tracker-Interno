@@ -23,3 +23,6 @@ export type TimeOffEntry = {
   /** ISO date (YYYY-MM-DD) when the entry was created. */
   createdAt: string
 }
+
+/** Alias — consumers use `TimeOff` in most places. */
+export type TimeOff = TimeOffEntry

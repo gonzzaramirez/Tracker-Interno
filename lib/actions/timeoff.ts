@@ -1,55 +1,44 @@
 "use server"
 
-/**
- * Time-off Server Actions — request, approve and reject persisted entries.
- */
-
 import { revalidatePath } from "next/cache"
 
-import type { TimeOffEntry } from "@/lib/domain"
-import {
-  approveTimeOff,
-  rejectTimeOff,
-  requestTimeOff,
-  type RequestTimeOffInput,
-} from "@/lib/services/timeoff"
+import type { TimeOff } from "@/lib/domain"
+import { createTimeOff, deleteTimeOff, approveTimeOff, rejectTimeOff } from "@/lib/services/timeoff"
 import { runActionResult, type ActionResult } from "@/lib/actions/result"
+import { getCurrentUserId } from "@/lib/auth"
 
-function revalidateTimeOffPaths(memberId?: string): void {
-  revalidatePath("/calendar")
-  revalidatePath("/")
-  revalidatePath("/members")
-  if (memberId) {
-    revalidatePath(`/members/${memberId}`)
-  }
-}
+type CreateInput = { memberId: string; startDate: string; endDate: string; type: "vacation" | "license" | "sickness" | "holiday"; note?: string }
 
-export async function requestTimeOffAction(
-  input: RequestTimeOffInput
-): Promise<ActionResult<TimeOffEntry>> {
-  const result = await runActionResult(() => requestTimeOff(input))
-  if (result.ok) {
-    revalidateTimeOffPaths(input.memberId)
-  }
+function revalidate(): void { revalidatePath("/calendar"); revalidatePath("/"); revalidatePath("/members") }
+
+export async function requestTimeOffAction(input: CreateInput): Promise<ActionResult<TimeOff>> {
+  const userId = await getCurrentUserId()
+  if (!userId) return { ok: false, error: "No autenticado." }
+  const result = await runActionResult(() => createTimeOff(userId, input))
+  if (result.ok) { revalidate(); revalidatePath(`/members/${input.memberId}`) }
   return result
 }
 
-export async function approveTimeOffAction(
-  id: string,
-): Promise<ActionResult<TimeOffEntry>> {
-  const result = await runActionResult(() => approveTimeOff(id))
-  if (result.ok) {
-    revalidateTimeOffPaths(result.data.memberId)
-  }
+export async function approveTimeOffAction(id: string): Promise<ActionResult<TimeOff>> {
+  const userId = await getCurrentUserId()
+  if (!userId) return { ok: false, error: "No autenticado." }
+  const result = await runActionResult(() => approveTimeOff(userId, id))
+  if (result.ok) revalidate()
   return result
 }
 
-export async function rejectTimeOffAction(
-  id: string,
-): Promise<ActionResult<TimeOffEntry>> {
-  const result = await runActionResult(() => rejectTimeOff(id))
-  if (result.ok) {
-    revalidateTimeOffPaths(result.data.memberId)
-  }
+export async function rejectTimeOffAction(id: string): Promise<ActionResult<TimeOff>> {
+  const userId = await getCurrentUserId()
+  if (!userId) return { ok: false, error: "No autenticado." }
+  const result = await runActionResult(() => rejectTimeOff(userId, id))
+  if (result.ok) revalidate()
+  return result
+}
+
+export async function deleteTimeOffAction(id: string): Promise<ActionResult<null>> {
+  const userId = await getCurrentUserId()
+  if (!userId) return { ok: false, error: "No autenticado." }
+  const result = await runActionResult(async () => { await deleteTimeOff(userId, id); return null })
+  if (result.ok) revalidate()
   return result
 }

@@ -2,6 +2,11 @@
  * Migration runner (task 1.4) — applies each `.sql` file in filename order and
  * records it in `schema_migrations`. Each migration has its own transaction and
  * already-applied versions are skipped.
+ *
+ * Foreign keys are temporarily disabled for the whole run: some migrations
+ * rebuild tables (SQLite cannot alter constraints), and `DROP TABLE` on a
+ * parent would otherwise fire ON DELETE CASCADE and wipe child rows. This is
+ * safe because migrations are trusted, versioned SQL.
  */
 import { readdirSync, readFileSync } from "node:fs"
 import { join } from "node:path"
@@ -32,19 +37,24 @@ export function migrate(db: DatabaseSync): void {
     "INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)"
   )
 
-  for (const file of files) {
-    if (applied.has(file)) {
-      continue
+  db.exec("PRAGMA foreign_keys = OFF")
+  try {
+    for (const file of files) {
+      if (applied.has(file)) {
+        continue
+      }
+      const sql = readFileSync(join(MIGRATIONS_DIR, file), "utf8")
+      db.exec("BEGIN")
+      try {
+        db.exec(sql)
+        mark.run(file, new Date().toISOString())
+        db.exec("COMMIT")
+      } catch (error) {
+        db.exec("ROLLBACK")
+        throw error
+      }
     }
-    const sql = readFileSync(join(MIGRATIONS_DIR, file), "utf8")
-    db.exec("BEGIN")
-    try {
-      db.exec(sql)
-      mark.run(file, new Date().toISOString())
-      db.exec("COMMIT")
-    } catch (error) {
-      db.exec("ROLLBACK")
-      throw error
-    }
+  } finally {
+    db.exec("PRAGMA foreign_keys = ON")
   }
 }

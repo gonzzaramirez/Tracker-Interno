@@ -14,11 +14,7 @@ export type Member = {
   status: MemberStatus
   /** ISO date (YYYY-MM-DD). */
   joinedAt: string
+  /** Hex color used for the avatar dot (optional). */
+  displayColor?: string
   notes?: string
-  /** Number of days between scheduled check-ins. */
-  checkinFreqDays: number
-  /** ISO date of the last completed check-in, if any. */
-  lastCheckinAt?: string
-  /** ISO date when the next check-in becomes due. */
-  nextCheckinAt: string
 }

@@ -25,7 +25,12 @@ export function MemberProfileCard({ member }: MemberProfileCardProps) {
       <AppleCardHeader>
         <div className="flex items-center gap-4">
           <span
-            className="flex size-14 shrink-0 items-center justify-center rounded-[1.25rem] bg-primary text-lg font-semibold text-primary-foreground shadow-sm"
+            className="flex size-14 shrink-0 items-center justify-center rounded-[1.25rem] text-lg font-semibold text-primary-foreground shadow-sm"
+            style={
+              member.displayColor
+                ? { backgroundColor: member.displayColor }
+                : undefined
+            }
             aria-hidden
           >
             {member.name

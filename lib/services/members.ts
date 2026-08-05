@@ -1,68 +1,28 @@
-/** Member profile use cases over the SQLite repositories. */
-
+/** Member use cases per tenant. */
 import { cache } from "react"
 
-import type { CheckIn, Feedback, Member, ProgressRecord, Task, TimeOffEntry } from "@/lib/domain"
-import { listCheckInsByMember } from "@/lib/db/repos/checkins"
-import { listFeedbackByMember as listFeedbackByMemberRepo } from "@/lib/db/repos/feedback"
-import {
-  getMemberById as getMemberByIdRepo,
-  listMembers as listMembersRepo,
-} from "@/lib/db/repos/members"
-import { listProgressByMemberTasks as listProgressByMemberTasksRepo } from "@/lib/db/repos/progress"
-import { listTasksByMember as listTasksByMemberRepo } from "@/lib/db/repos/tasks"
-import { listTimeOffByMember as listTimeOffByMemberRepo } from "@/lib/db/repos/timeoff"
+import type { Member, MemberStatus } from "@/lib/domain"
+import { getMemberById as getMemberByIdRepo, insertMember, listMembers, searchMembers, updateMember } from "@/lib/db/repos/members"
 
-export type TimelineEntry = CheckIn
+const memoList = cache((userId: string) => listMembers(userId))
+const memoById = cache((userId: string, id: string) => getMemberByIdRepo(userId, id))
 
-const readMembers = cache(listMembersRepo)
-const readMemberById = cache(getMemberByIdRepo)
-const readFeedbackByMember = cache(listFeedbackByMemberRepo)
-const readTasksByMember = cache(listTasksByMemberRepo)
-const readTimeOffByMember = cache(listTimeOffByMemberRepo)
-const readProgressByMemberTasks = cache(listProgressByMemberTasksRepo)
-const readCheckInsByMember = cache(listCheckInsByMember)
+export type CreateMemberInput = { name: string; role: string; status?: MemberStatus; joinedAt: string; displayColor?: string; notes?: string }
+export type UpdateMemberInput = { name?: string; role?: string; status?: MemberStatus; joinedAt?: string; displayColor?: string | null; notes?: string | null }
 
-export type MemberFeed = {
-  member: Member
-  tasks: Task[]
-  progress: ProgressRecord[]
-  feedback: Feedback[]
-  timeOff: TimeOffEntry[]
+export async function getMembers(userId: string): Promise<Member[]> { return memoList(userId) }
+export async function getMember(userId: string, id: string): Promise<Member | undefined> { return memoById(userId, id) }
+
+export async function createMember(userId: string, input: CreateMemberInput): Promise<Member> {
+  return insertMember(userId, { ...input, status: input.status ?? "active", role: input.role || "", joinedAt: input.joinedAt || new Date().toISOString().slice(0, 10) })
 }
 
-export async function getMembers(): Promise<Member[]> {
-  return readMembers()
+export async function editMember(userId: string, id: string, patch: UpdateMemberInput): Promise<Member | undefined> {
+  const current = await getMemberByIdRepo(userId, id)
+  if (!current) return undefined
+  return updateMember(userId, id, { name: patch.name ?? current.name, role: patch.role ?? current.role, status: patch.status ?? current.status, joinedAt: patch.joinedAt ?? current.joinedAt, displayColor: patch.displayColor === null ? undefined : patch.displayColor ?? current.displayColor, notes: patch.notes === null ? undefined : patch.notes ?? current.notes })
 }
 
-export async function getMember(id: string): Promise<Member | undefined> {
-  return readMemberById(id)
-}
-
-/** Completed check-ins ordered chronologically for the member profile. */
-export async function getMemberTimeline(memberId: string): Promise<TimelineEntry[]> {
-  const records = await readCheckInsByMember(memberId)
-  return [...records].sort((a, b) => {
-    if (a.date !== b.date) {
-      return a.date.localeCompare(b.date)
-    }
-    return a.id.localeCompare(b.id)
-  })
-}
-
-/** Full member profile data (REQ-MF-002). */
-export async function getMemberFeed(memberId: string): Promise<MemberFeed | undefined> {
-  const member = await readMemberById(memberId)
-  if (!member) {
-    return undefined
-  }
-
-  const [tasks, feedback, timeOff] = await Promise.all([
-    readTasksByMember(memberId),
-    readFeedbackByMember(memberId),
-    readTimeOffByMember(memberId),
-  ])
-  const progress = await readProgressByMemberTasks(tasks)
-
-  return { member, tasks, progress, feedback, timeOff }
+export async function searchMembersByQuery(userId: string, query: string): Promise<Member[]> {
+  return searchMembers(userId, query)
 }

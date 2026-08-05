@@ -2,6 +2,7 @@ import Link from "next/link"
 import type { LucideIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { Sparkline } from "@/components/feature/sparkline"
 
 const TONES = {
   neutral: "bg-muted text-foreground",
@@ -20,6 +21,8 @@ type MetricCardProps = {
   icon: LucideIcon
   tone?: MetricTone
   href?: string
+  /** Optional mini-series for a sparkline at the bottom of the card. */
+  sparkline?: number[]
 }
 
 /**
@@ -33,6 +36,7 @@ export function MetricCard({
   icon: Icon,
   tone = "neutral",
   href,
+  sparkline,
 }: MetricCardProps) {
   return (
     <div className="group/metric-card relative flex flex-col gap-2 rounded-(--radius-card) bg-card p-5 ring-1 ring-foreground/5 shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-shadow hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)]">
@@ -46,6 +50,7 @@ export function MetricCard({
         {value}
       </p>
       {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
+      {sparkline ? <Sparkline data={sparkline} /> : null}
       {href ? (
         <Link
           href={href}

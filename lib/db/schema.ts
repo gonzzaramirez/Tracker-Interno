@@ -25,11 +25,16 @@ export type TimeOffType = (typeof TIME_OFF_TYPES)[number]
 export const TIME_OFF_STATUSES = ["pending", "approved", "rejected"] as const
 export type TimeOffStatus = (typeof TIME_OFF_STATUSES)[number]
 
-export const SEMAPHORES = ["green", "yellow", "red"] as const
-export type Semaphore = (typeof SEMAPHORES)[number]
+export type UserRow = {
+  id: string
+  username: string
+  password_hash: string
+  created_at: string
+}
 
 export type MemberRow = {
   id: string
+  user_id: string
   name: string
   role: string
   display_color: string
@@ -43,7 +48,7 @@ export type MemberRow = {
 
 export type TaskRow = {
   id: string
-  member_id: string
+  user_id: string
   title: string
   description: string | null
   priority: TaskPriority
@@ -86,6 +91,7 @@ export type SnippetRow = {
 
 export type TimeOffRow = {
   id: string
+  user_id: string
   member_id: string
   start_date: string
   end_date: string
@@ -99,8 +105,61 @@ export type CheckInRow = {
   id: string
   member_id: string
   checkin_date: string
-  semaphore: Semaphore | null
+  semaphore: "green" | "yellow" | "red" | null
   note: string | null
+  created_at: string
+}
+
+export type TrackingRecordRow = {
+  id: string
+  user_id: string
+  member_id: string
+  rating: number | null
+  content_html: string
+  record_date: string
+  created_at: string
+  created_sequence: number
+  updated_at: string | null
+}
+
+export type TrackingTaskRow = {
+  id: string
+  user_id: string
+  record_id: string
+  title: string
+  description: string | null
+  progress: number
+  created_at: string
+}
+
+export const EVALUATION_AREA_IDS = [
+  "compliance",
+  "quality",
+  "communication",
+  "proactivity",
+  "teamwork",
+  "attitude",
+] as const
+export type EvaluationAreaId = (typeof EVALUATION_AREA_IDS)[number]
+
+export type TrackingEvaluationRow = {
+  id: string
+  user_id: string
+  record_id: string
+  area_id: EvaluationAreaId
+  score: number
+  max_score: number
+  weight: number
+  created_at: string
+}
+
+export type AttendanceRow = {
+  id: string
+  user_id: string
+  member_id: string
+  date: string
+  /** Wall-clock time (HH:MM) when the mark was made; null for pre-migration rows. */
+  marked_at: string | null
   created_at: string
 }
 
