@@ -2,8 +2,8 @@
  * SQLite connection singleton (async, via @libsql/client).
  *
  * Uses one client per process, guarded through `globalThis`. The first
- * initialization applies pending migrations, ensures at least one admin user
- * exists and seeds a demo dataset when the store is empty.
+ * initialization applies pending migrations and ensures the default
+ * supervisor (gonza) exists. No demo data is ever inserted.
  *
  * - Local dev: `file:` URL over the native binding (data/tracker.db)
  * - Vercel/Turso: remote libsql:// URL (pure-JS hrana over HTTP)
@@ -13,7 +13,6 @@ import { createClient, type Client } from "@libsql/client"
 
 import { migrate } from "./migrate"
 import { DB_DIR, DB_PATH } from "./paths"
-import { seedIfEmpty } from "./seed"
 import { hashPassword } from "../auth-password"
 
 const globalForTracker = globalThis as typeof globalThis & {
@@ -31,15 +30,21 @@ function clientConfig(): { url: string; authToken?: string } {
   return { url: `file:${DB_PATH}` }
 }
 
-/** Idempotent: inserts the default admin user only when the users table is empty. */
+/** Default supervisor created on an empty users table (production-ready). */
+const DEFAULT_USER = {
+  id: "user-gonza",
+  username: "gonza",
+  password: "gonza",
+}
+
 async function ensureDefaultUser(client: Client): Promise<void> {
   const result = await client.execute("SELECT COUNT(*) AS n FROM users")
   const n = Number((result.rows[0] as unknown as { n: number }).n)
   if (n !== 0) return
-  const hash = hashPassword("admin")
+  const hash = hashPassword(DEFAULT_USER.password)
   await client.execute({
     sql: "INSERT INTO users (id, username, password_hash, created_at) VALUES (?, ?, ?, ?)",
-    args: ["user-admin", "admin", hash, new Date().toISOString()],
+    args: [DEFAULT_USER.id, DEFAULT_USER.username, hash, new Date().toISOString()],
   })
 }
 
@@ -48,7 +53,6 @@ async function init(): Promise<Client> {
   try {
     await migrate(client)
     await ensureDefaultUser(client)
-    await seedIfEmpty(client)
     return client
   } catch (error) {
     client.close()

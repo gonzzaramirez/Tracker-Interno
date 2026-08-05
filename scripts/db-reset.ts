@@ -1,24 +1,18 @@
-import { mkdirSync, rmSync } from "node:fs"
-import { createClient } from "@libsql/client"
+import { rmSync } from "node:fs"
 
-import { DB_DIR, DB_PATH } from "../lib/db/paths"
-import { migrate } from "../lib/db/migrate"
-import { seedIfEmpty } from "../lib/db/seed"
+import { DB_PATH } from "../lib/db/paths"
+import { getDb } from "../lib/db/connection"
 
+/**
+ * Reset the LOCAL database: deletes the file (schema + data) and re-runs
+ * migrations + default user creation on next access.
+ */
 async function main() {
   for (const suffix of ["", "-wal", "-shm"]) {
     rmSync(`${DB_PATH}${suffix}`, { force: true })
   }
-  mkdirSync(DB_DIR, { recursive: true })
-
-  const client = createClient({ url: `file:${DB_PATH}` })
-  try {
-    await migrate(client)
-    const seeded = await seedIfEmpty(client)
-    console.log(`Database reset at ${DB_PATH} (${DB_DIR}); seed applied: ${seeded}`)
-  } finally {
-    client.close()
-  }
+  await getDb() // re-initializes: migrations + default user (gonza)
+  console.log(`Database reset at ${DB_PATH} — schema only, no demo data.`)
 }
 
 main().catch((error) => {
