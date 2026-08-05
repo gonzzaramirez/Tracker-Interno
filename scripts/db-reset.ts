@@ -1,26 +1,27 @@
 import { mkdirSync, rmSync } from "node:fs"
-import { DatabaseSync } from "node:sqlite"
+import { createClient } from "@libsql/client"
 
 import { DB_DIR, DB_PATH } from "../lib/db/paths"
 import { migrate } from "../lib/db/migrate"
 import { seedIfEmpty } from "../lib/db/seed"
 
-for (const suffix of ["", "-wal", "-shm"]) {
-  rmSync(`${DB_PATH}${suffix}`, { force: true })
+async function main() {
+  for (const suffix of ["", "-wal", "-shm"]) {
+    rmSync(`${DB_PATH}${suffix}`, { force: true })
+  }
+  mkdirSync(DB_DIR, { recursive: true })
+
+  const client = createClient({ url: `file:${DB_PATH}` })
+  try {
+    await migrate(client)
+    const seeded = await seedIfEmpty(client)
+    console.log(`Database reset at ${DB_PATH} (${DB_DIR}); seed applied: ${seeded}`)
+  } finally {
+    client.close()
+  }
 }
 
-mkdirSync(DB_DIR, { recursive: true })
-const db = new DatabaseSync(DB_PATH, {
-  enableForeignKeyConstraints: true,
-  timeout: 5000,
+main().catch((error) => {
+  console.error(error)
+  process.exit(1)
 })
-db.exec("PRAGMA journal_mode = WAL")
-db.exec("PRAGMA foreign_keys = ON")
-
-try {
-  migrate(db)
-  const seeded = seedIfEmpty(db)
-  console.log(`Database reset at ${DB_PATH} (${DB_DIR}); seed applied: ${seeded}`)
-} finally {
-  db.close()
-}

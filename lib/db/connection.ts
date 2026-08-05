@@ -1,67 +1,67 @@
 /**
- * SQLite connection singleton (decision D4, task 1.1).
+ * SQLite connection singleton (async, via @libsql/client).
  *
- * A single `DatabaseSync` handle per process, guarded through `globalThis` so
- * Fast Refresh / re-renders never open a second connection. The first
+ * Uses one client per process, guarded through `globalThis`. The first
  * initialization applies pending migrations, ensures at least one admin user
- * exists (req. for multi-tenancy) and seeds a demo dataset only when the
- * database is empty.
+ * exists and seeds a demo dataset when the store is empty.
+ *
+ * - Local dev: `file:` URL over the native binding (data/tracker.db)
+ * - Vercel/Turso: remote libsql:// URL (pure-JS hrana over HTTP)
  */
-import { DatabaseSync } from "node:sqlite"
 import { mkdirSync } from "node:fs"
+import { createClient, type Client } from "@libsql/client"
 
 import { migrate } from "./migrate"
 import { DB_DIR, DB_PATH } from "./paths"
 import { seedIfEmpty } from "./seed"
 import { hashPassword } from "../auth-password"
 
-/** Smallest stable namespace that survives HMR without leaking into requests. */
 const globalForTracker = globalThis as typeof globalThis & {
-  __trackerDatabase?: DatabaseSync
+  __trackerDatabase?: Promise<Client>
 }
 
-function openDatabase(): DatabaseSync {
+function clientConfig(): { url: string; authToken?: string } {
+  if (process.env.TURSO_DATABASE_URL) {
+    return {
+      url: process.env.TURSO_DATABASE_URL,
+      authToken: process.env.TURSO_AUTH_TOKEN,
+    }
+  }
   mkdirSync(DB_DIR, { recursive: true })
-  const db = new DatabaseSync(DB_PATH, {
-    enableForeignKeyConstraints: true,
-    timeout: 5000,
-  })
-  db.exec("PRAGMA journal_mode = WAL")
-  db.exec("PRAGMA foreign_keys = ON")
-  return db
+  return { url: `file:${DB_PATH}` }
 }
 
 /** Idempotent: inserts the default admin user only when the users table is empty. */
-function ensureDefaultUser(db: DatabaseSync): void {
-  const count = db.prepare("SELECT COUNT(*) AS n FROM users").get() as { n: number }
-  if (count.n !== 0) return
+async function ensureDefaultUser(client: Client): Promise<void> {
+  const result = await client.execute("SELECT COUNT(*) AS n FROM users")
+  const n = Number((result.rows[0] as unknown as { n: number }).n)
+  if (n !== 0) return
   const hash = hashPassword("admin")
-  db.prepare(
-    "INSERT INTO users (id, username, password_hash, created_at) VALUES (?, ?, ?, ?)",
-  ).run("user-admin", "admin", hash, new Date().toISOString())
+  await client.execute({
+    sql: "INSERT INTO users (id, username, password_hash, created_at) VALUES (?, ?, ?, ?)",
+    args: ["user-admin", "admin", hash, new Date().toISOString()],
+  })
 }
 
-/**
- * Shared connection for the current process. Applies migrations on first
- * open, then ensures the admin user is ready, and finally seeds the demo
- * dataset when the store is empty.
- */
-export function getDb(): DatabaseSync {
-  if (globalForTracker.__trackerDatabase) {
-    return globalForTracker.__trackerDatabase
-  }
-
-  const db = openDatabase()
+async function init(): Promise<Client> {
+  const client = createClient(clientConfig())
   try {
-    migrate(db)
-    ensureDefaultUser(db)
-    seedIfEmpty(db)
-    globalForTracker.__trackerDatabase = db
-    return db
+    await migrate(client)
+    await ensureDefaultUser(client)
+    await seedIfEmpty(client)
+    return client
   } catch (error) {
-    db.close()
+    client.close()
     throw error
   }
+}
+
+/** Shared client for the current process (async init runs exactly once). */
+export function getDb(): Promise<Client> {
+  if (!globalForTracker.__trackerDatabase) {
+    globalForTracker.__trackerDatabase = init()
+  }
+  return globalForTracker.__trackerDatabase
 }
 
 export { DB_PATH }

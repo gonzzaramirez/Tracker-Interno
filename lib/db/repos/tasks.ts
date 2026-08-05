@@ -3,7 +3,7 @@
  */
 import { randomUUID } from "node:crypto"
 
-import { getDb } from "../connection"
+import { mutate, query, queryOne } from "../query"
 import type { TaskRow } from "../schema"
 import type { Task } from "@/lib/domain"
 import { todayISO } from "@/lib/domain/date"
@@ -16,19 +16,19 @@ function toTask(row: TaskRow): Task {
 }
 
 export async function listTasks(userId: string): Promise<Task[]> {
-  const rows = getDb().prepare("SELECT * FROM tasks WHERE user_id = ? ORDER BY created_at ASC, id ASC").all(userId) as TaskRow[]
+  const rows = await query<TaskRow>("SELECT * FROM tasks WHERE user_id = ? ORDER BY created_at ASC, id ASC", [userId])
   return rows.map(toTask)
 }
 
 export async function getTaskById(userId: string, id: string): Promise<Task | undefined> {
-  const row = getDb().prepare("SELECT * FROM tasks WHERE user_id = ? AND id = ?").get(userId, id) as TaskRow | undefined
+  const row = await queryOne<TaskRow>("SELECT * FROM tasks WHERE user_id = ? AND id = ?", [userId, id])
   return row ? toTask(row) : undefined
 }
 
 export async function insertTask(userId: string, input: NewTask): Promise<Task> {
   const id = randomUUID()
   const createdAt = todayISO()
-  getDb().prepare("INSERT INTO tasks (id, user_id, title, description, created_at) VALUES (?, ?, ?, ?, ?)").run(id, userId, input.title, input.description ?? null, createdAt)
+  await mutate("INSERT INTO tasks (id, user_id, title, description, created_at) VALUES (?, ?, ?, ?, ?)", [id, userId, input.title, input.description ?? null, createdAt])
   const task = await getTaskById(userId, id)
   if (!task) throw new Error(`Task ${id} could not be read after insert.`)
   return task
@@ -40,11 +40,11 @@ export async function updateTaskById(userId: string, id: string, patch: UpdateTa
   if (patch.description !== undefined) entries.push({ column: "description", value: patch.description })
   if (entries.length === 0) return getTaskById(userId, id)
   const setClause = entries.map(({ column }) => `${column} = ?`).join(", ")
-  getDb().prepare(`UPDATE tasks SET ${setClause} WHERE user_id = ? AND id = ?`).run(...entries.map(({ value }) => value), userId, id)
+  await mutate(`UPDATE tasks SET ${setClause} WHERE user_id = ? AND id = ?`, [...entries.map((e) => e.value), userId, id])
   return getTaskById(userId, id)
 }
 
 export async function deleteTaskById(userId: string, id: string): Promise<boolean> {
-  const result = getDb().prepare("DELETE FROM tasks WHERE user_id = ? AND id = ?").run(userId, id)
-  return Number(result.changes) > 0
+  const changes = await mutate("DELETE FROM tasks WHERE user_id = ? AND id = ?", [userId, id])
+  return changes > 0
 }

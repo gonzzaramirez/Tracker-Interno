@@ -1,45 +1,19 @@
 /**
- * Tracking repository (core) — raw SQL over the shared connection, filtered by tenant.
+ * Tracking repository (core) — queries over the shared client, filtered by tenant.
  */
 import { randomUUID } from "node:crypto"
 
-import { getDb } from "../connection"
-import type {
-  TrackingRecordRow,
-  TrackingTaskRow,
-  TrackingEvaluationRow,
-  EvaluationAreaId,
-} from "../schema"
+import { mutate, query, queryOne } from "../query"
+import type { TrackingRecordRow, TrackingTaskRow, TrackingEvaluationRow, EvaluationAreaId } from "../schema"
 import type { TrackingRecord, TrackingTask, TrackingEvaluation } from "@/lib/domain"
 import { EVALUATION_AREAS } from "@/lib/domain/tracking"
 import { isISODate, todayISO } from "@/lib/domain/date"
 import { nextSequence } from "./sequence"
 
-export type NewTrackingTask = {
-  title: string
-  description?: string
-  progress?: number
-}
-
-export type NewTrackingEvaluation = {
-  areaId: EvaluationAreaId
-  score: number
-  maxScore?: number
-  weight?: number
-}
-
-export type NewTrackingRecord = {
-  memberId: string
-  rating: number | null
-  contentHtml: string
-  recordDate?: string
-}
-
-export type UpdateTrackingRecord = {
-  rating?: number | null
-  contentHtml?: string
-  recordDate?: string
-}
+export type NewTrackingTask = { title: string; description?: string; progress?: number }
+export type NewTrackingEvaluation = { areaId: EvaluationAreaId; score: number; maxScore?: number; weight?: number }
+export type NewTrackingRecord = { memberId: string; rating: number | null; contentHtml: string; recordDate?: string }
+export type UpdateTrackingRecord = { rating?: number | null; contentHtml?: string; recordDate?: string }
 
 function toRecord(row: TrackingRecordRow): TrackingRecord {
   return {
@@ -78,23 +52,23 @@ function toEvaluation(row: TrackingEvaluationRow): TrackingEvaluationWithRecord 
 }
 
 export async function listTrackingRecords(userId: string): Promise<TrackingRecord[]> {
-  const rows = getDb()
-    .prepare("SELECT * FROM tracking_records WHERE user_id = ? ORDER BY created_at DESC, created_sequence DESC, id DESC")
-    .all(userId) as TrackingRecordRow[]
+  const rows = await query<TrackingRecordRow>(
+    "SELECT * FROM tracking_records WHERE user_id = ? ORDER BY created_at DESC, created_sequence DESC, id DESC",
+    [userId],
+  )
   return rows.map(toRecord)
 }
 
 export async function listTrackingByMember(userId: string, memberId: string): Promise<TrackingRecord[]> {
-  const rows = getDb()
-    .prepare("SELECT * FROM tracking_records WHERE user_id = ? AND member_id = ? ORDER BY created_at DESC, created_sequence DESC, id DESC")
-    .all(userId, memberId) as TrackingRecordRow[]
+  const rows = await query<TrackingRecordRow>(
+    "SELECT * FROM tracking_records WHERE user_id = ? AND member_id = ? ORDER BY created_at DESC, created_sequence DESC, id DESC",
+    [userId, memberId],
+  )
   return rows.map(toRecord)
 }
 
 export async function getTrackingById(userId: string, id: string): Promise<TrackingRecord | undefined> {
-  const row = getDb()
-    .prepare("SELECT * FROM tracking_records WHERE user_id = ? AND id = ?")
-    .get(userId, id) as TrackingRecordRow | undefined
+  const row = await queryOne<TrackingRecordRow>("SELECT * FROM tracking_records WHERE user_id = ? AND id = ?", [userId, id])
   return row ? toRecord(row) : undefined
 }
 
@@ -107,16 +81,16 @@ export async function insertTrackingRecord(userId: string, input: NewTrackingRec
   }
 
   const id = randomUUID()
-  const db = getDb()
   const createdAt = new Date().toISOString()
   const recordDate = input.recordDate ?? todayISO()
-  const createdSequence = nextSequence(db, "tracking_records")
-  db.prepare(
+  const createdSequence = await nextSequence("tracking_records")
+  await mutate(
     `INSERT INTO tracking_records
      (id, user_id, member_id, rating, content_html, record_date, created_at, created_sequence)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-  ).run(id, userId, input.memberId, input.rating, input.contentHtml, recordDate, createdAt, createdSequence)
-  const row = db.prepare("SELECT * FROM tracking_records WHERE user_id = ? AND id = ?").get(userId, id) as TrackingRecordRow | undefined
+    [id, userId, input.memberId, input.rating, input.contentHtml, recordDate, createdAt, createdSequence],
+  )
+  const row = await queryOne<TrackingRecordRow>("SELECT * FROM tracking_records WHERE user_id = ? AND id = ?", [userId, id])
   if (!row) throw new Error(`Tracking record ${id} could not be read after insert.`)
   return toRecord(row)
 }
@@ -137,21 +111,22 @@ export async function updateTrackingRecord(userId: string, id: string, patch: Up
   if (entries.length === 0) return getTrackingById(userId, id)
   entries.push({ column: "updated_at", value: new Date().toISOString() })
   const setClause = entries.map(({ column }) => `${column} = ?`).join(", ")
-  getDb().prepare(`UPDATE tracking_records SET ${setClause} WHERE user_id = ? AND id = ?`).run(...entries.map(({ value }) => value), userId, id)
+  await mutate(`UPDATE tracking_records SET ${setClause} WHERE user_id = ? AND id = ?`, [...entries.map((e) => e.value), userId, id])
   return getTrackingById(userId, id)
 }
 
 export async function deleteTrackingRecord(userId: string, id: string): Promise<boolean> {
-  const result = getDb().prepare("DELETE FROM tracking_records WHERE user_id = ? AND id = ?").run(userId, id)
-  return Number(result.changes) > 0
+  const changes = await mutate("DELETE FROM tracking_records WHERE user_id = ? AND id = ?", [userId, id])
+  return changes > 0
 }
 
 export async function listTrackingTasksByRecords(userId: string, recordIds: string[]): Promise<TrackingTask[]> {
   if (recordIds.length === 0) return []
   const placeholders = recordIds.map(() => "?").join(", ")
-  const rows = getDb()
-    .prepare(`SELECT * FROM tracking_tasks WHERE user_id = ? AND record_id IN (${placeholders}) ORDER BY created_at ASC, id ASC`)
-    .all(userId, ...recordIds) as TrackingTaskRow[]
+  const rows = await query<TrackingTaskRow>(
+    `SELECT * FROM tracking_tasks WHERE user_id = ? AND record_id IN (${placeholders}) ORDER BY created_at ASC, id ASC`,
+    [userId, ...recordIds],
+  )
   return rows.map(toTask)
 }
 
@@ -161,37 +136,40 @@ export async function insertTrackingTask(userId: string, recordId: string, input
   if (!Number.isFinite(progress) || progress < 0 || progress > 100) throw new RangeError("Progress must be between 0 and 100.")
   const id = randomUUID()
   const createdAt = todayISO()
-  getDb()
-    .prepare(`INSERT INTO tracking_tasks (id, user_id, record_id, title, description, progress, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)`)
-    .run(id, userId, recordId, input.title.trim(), input.description?.trim() || null, Math.round(progress), createdAt)
-  const row = getDb().prepare("SELECT * FROM tracking_tasks WHERE user_id = ? AND id = ?").get(userId, id) as TrackingTaskRow | undefined
+  await mutate(
+    "INSERT INTO tracking_tasks (id, user_id, record_id, title, description, progress, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+    [id, userId, recordId, input.title.trim(), input.description?.trim() || null, Math.round(progress), createdAt],
+  )
+  const row = await queryOne<TrackingTaskRow>("SELECT * FROM tracking_tasks WHERE user_id = ? AND id = ?", [userId, id])
   if (!row) throw new Error(`Tracking task ${id} could not be read after insert.`)
   return toTask(row)
 }
 
 export async function deleteTrackingTask(userId: string, id: string): Promise<boolean> {
-  const result = getDb().prepare("DELETE FROM tracking_tasks WHERE user_id = ? AND id = ?").run(userId, id)
-  return Number(result.changes) > 0
+  const changes = await mutate("DELETE FROM tracking_tasks WHERE user_id = ? AND id = ?", [userId, id])
+  return changes > 0
 }
 
 export async function listEvaluationsByRecords(userId: string, recordIds: string[]): Promise<TrackingEvaluationWithRecord[]> {
   if (recordIds.length === 0) return []
   const placeholders = recordIds.map(() => "?").join(", ")
-  const rows = getDb()
-    .prepare(`SELECT * FROM tracking_evaluations WHERE user_id = ? AND record_id IN (${placeholders}) ORDER BY area_id ASC, id ASC`)
-    .all(userId, ...recordIds) as TrackingEvaluationRow[]
+  const rows = await query<TrackingEvaluationRow>(
+    `SELECT * FROM tracking_evaluations WHERE user_id = ? AND record_id IN (${placeholders}) ORDER BY area_id ASC, id ASC`,
+    [userId, ...recordIds],
+  )
   return rows.map(toEvaluation)
 }
 
 export async function replaceTrackingEvaluations(userId: string, recordId: string, items: NewTrackingEvaluation[]): Promise<void> {
-  const db = getDb()
-  db.prepare("DELETE FROM tracking_evaluations WHERE user_id = ? AND record_id = ?").run(userId, recordId)
+  await mutate("DELETE FROM tracking_evaluations WHERE user_id = ? AND record_id = ?", [userId, recordId])
   if (items.length === 0) return
-  const insert = db.prepare(`INSERT INTO tracking_evaluations (id, user_id, record_id, area_id, score, max_score, weight, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
   const createdAt = new Date().toISOString()
   for (const item of items) {
     if (!Number.isInteger(item.score) || item.score < 1 || item.score > 5) throw new RangeError("Evaluation score must be an integer between 1 and 5.")
     if (!EVALUATION_AREAS.some((area) => area.id === item.areaId)) throw new RangeError("Unknown evaluation area.")
-    insert.run(randomUUID(), userId, recordId, item.areaId, item.score, item.maxScore ?? 5, item.weight ?? 1, createdAt)
+    await mutate(
+      "INSERT INTO tracking_evaluations (id, user_id, record_id, area_id, score, max_score, weight, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      [randomUUID(), userId, recordId, item.areaId, item.score, item.maxScore ?? 5, item.weight ?? 1, createdAt],
+    )
   }
 }
