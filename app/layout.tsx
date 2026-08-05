@@ -3,6 +3,7 @@ import { ThemeProvider } from "next-themes";
 
 import "./globals.css";
 import "@smastrom/react-rating/style.css";
+import "@excalidraw/excalidraw/index.css";
 import { AppNav } from "@/components/layout/app-nav";
 import { Toaster } from "@/components/ui/sonner";
 import { CommandPaletteProvider } from "@/components/feature/command-palette-provider";

@@ -8,6 +8,7 @@ import {
   FingerprintIcon,
   KeyRoundIcon,
   LayoutDashboardIcon,
+  LayoutGridIcon,
   LogOutIcon,
   MessageSquareTextIcon,
   UsersIcon,
@@ -22,6 +23,7 @@ const NAV_ITEMS = [
   { href: "/members", label: "Miembros", icon: UsersIcon },
   { href: "/asistencias", label: "Asistencias", icon: FingerprintIcon },
   { href: "/tracking", label: "Seguimiento", icon: MessageSquareTextIcon },
+  { href: "/boards", label: "Pizarras", icon: LayoutGridIcon },
   { href: "/tasks", label: "Tareas", icon: CheckSquareIcon },
   { href: "/calendar", label: "Calendario", icon: CalendarDaysIcon },
 ] as const
@@ -42,25 +44,25 @@ export function AppNav({ username }: { username: string }) {
           </span>
           <span className="hidden sm:inline">Tracker</span>
         </Link>
-        <div className="flex items-center gap-1 overflow-x-auto">
+        <div className="flex items-center gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {NAV_ITEMS.map((item) => {
             const active = isActive(pathname, item.href, "exact" in item && item.exact)
             return (
               <Link key={item.href} href={item.href} aria-label={item.label} aria-current={active ? "page" : undefined}
                 className={cn(
-                  "flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+                  "flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground lg:px-3",
                   active && "bg-foreground/5 text-foreground",
                 )}>
                 <item.icon className="size-4" aria-hidden="true" />
-                <span className="hidden md:inline">{item.label}</span>
+                <span className="hidden lg:inline">{item.label}</span>
               </Link>
             )
           })}
         </div>
         <div className="ml-auto flex items-center gap-2">
-          <Link href="/profile" className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
+          <Link href="/profile" className="inline-flex items-center gap-1 rounded-full px-2.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground lg:px-3">
             <KeyRoundIcon className="size-4" aria-hidden />
-            <span className="hidden sm:inline">{username}</span>
+            <span className="hidden lg:inline">{username}</span>
           </Link>
           <form action={signOutAction}>
             <Button type="submit" variant="ghost" size="icon" aria-label="Cerrar sesión">

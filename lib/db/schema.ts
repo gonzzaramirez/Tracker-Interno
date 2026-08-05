@@ -153,6 +153,15 @@ export type TrackingEvaluationRow = {
   created_at: string
 }
 
+export type BoardRow = {
+  id: string
+  user_id: string
+  name: string
+  scene_json: string
+  created_at: string
+  updated_at: string
+}
+
 export type AttendanceRow = {
   id: string
   user_id: string
