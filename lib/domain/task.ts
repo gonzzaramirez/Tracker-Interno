@@ -10,6 +10,10 @@ export type Task = {
   id: string
   title: string
   description?: string
-  /** ISO date (YYYY-MM-DD). */
+  /**
+   * Creation timestamp. New tasks store a full ISO timestamp
+   * (YYYY-MM-DDTHH:mm:ss.sssZ); tasks created before that change only have a
+   * date (YYYY-MM-DD) and no wall-clock time.
+   */
   createdAt: string
 }

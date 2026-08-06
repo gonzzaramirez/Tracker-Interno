@@ -20,6 +20,7 @@ import {
   type TrackingEvaluation,
   type TrackingRecordWithTasks,
 } from "@/lib/domain"
+import { formatArgDateTime, toArgTime } from "@/lib/domain/date"
 
 function formatDate(dateISO: string): string {
   return new Date(`${dateISO}T00:00:00`).toLocaleDateString("es-AR", {
@@ -27,6 +28,11 @@ function formatDate(dateISO: string): string {
     day: "numeric",
     year: "numeric",
   })
+}
+
+/** HH:MM (Argentina time) of an ISO timestamp, for the "reported at" hint. */
+function toArgTimeDisplay(iso: string): string {
+  return toArgTime(new Date(iso))
 }
 
 type ChangePillProps = {
@@ -94,6 +100,12 @@ export function TrackingRecordCard({
           )}
           <span className="text-xs tabular-nums text-muted-foreground">
             {formatDate(record.recordDate)}
+          </span>
+          <span
+            className="text-xs tabular-nums text-muted-foreground"
+            title={`Reportado el ${formatArgDateTime(record.createdAt)}`}
+          >
+            · {toArgTimeDisplay(record.createdAt)}
           </span>
         </div>
         <div className="flex items-center gap-1">

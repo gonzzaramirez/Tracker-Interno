@@ -9,6 +9,27 @@ export type DateRange = {
   endDate: string
 }
 
+/**
+ * App-wide timezone: everything (capture and display) is pinned to Argentina.
+ * The server (Turso/Vercel) runs in UTC, so local getters are never used for
+ * wall-clock time or calendar dates.
+ */
+export const APP_TIMEZONE = "America/Argentina/Buenos_Aires"
+
+const argDateFormatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: APP_TIMEZONE,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+})
+
+const argTimeFormatter = new Intl.DateTimeFormat("en-GB", {
+  timeZone: APP_TIMEZONE,
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+})
+
 /** Format a Date as an ISO YYYY-MM-DD value in local time. */
 export function isoDate(date: Date): string {
   const year = date.getFullYear()
@@ -17,9 +38,23 @@ export function isoDate(date: Date): string {
   return `${year}-${month}-${day}`
 }
 
-/** Today as an ISO YYYY-MM-DD value. */
+/** Today as an ISO YYYY-MM-DD value in Argentina time. */
 export function todayISO(): string {
-  return isoDate(new Date())
+  return argDateFormatter.format(new Date())
+}
+
+/** Wall-clock time (HH:MM, 24h) in Argentina time. */
+export function toArgTime(date: Date): string {
+  return argTimeFormatter.format(date)
+}
+
+/** Format an ISO timestamp as a short "DD/MM, HH:MM" in Argentina time. */
+export function formatArgDateTime(iso: string): string {
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) {
+    return iso
+  }
+  return `${argDateFormatter.format(date)}, ${toArgTime(date)}`
 }
 
 /** Whether a value is a real calendar date in YYYY-MM-DD form. */

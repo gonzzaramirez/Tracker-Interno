@@ -6,7 +6,6 @@ import { randomUUID } from "node:crypto"
 import { mutate, query, queryOne } from "../query"
 import type { TaskRow } from "../schema"
 import type { Task } from "@/lib/domain"
-import { todayISO } from "@/lib/domain/date"
 
 export type NewTask = { title: string; description?: string }
 export type UpdateTask = { title?: string; description?: string | null }
@@ -27,7 +26,7 @@ export async function getTaskById(userId: string, id: string): Promise<Task | un
 
 export async function insertTask(userId: string, input: NewTask): Promise<Task> {
   const id = randomUUID()
-  const createdAt = todayISO()
+  const createdAt = new Date().toISOString()
   await mutate("INSERT INTO tasks (id, user_id, title, description, created_at) VALUES (?, ?, ?, ?, ?)", [id, userId, input.title, input.description ?? null, createdAt])
   const task = await getTaskById(userId, id)
   if (!task) throw new Error(`Task ${id} could not be read after insert.`)

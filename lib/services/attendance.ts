@@ -3,7 +3,7 @@ import { cache } from "react"
 
 import type { Attendance, Member } from "@/lib/domain"
 import { listAttendanceByDate, listAttendanceByMember, markAttendance, unmarkAttendance } from "@/lib/db/repos/attendance"
-import { todayISO } from "@/lib/domain/date"
+import { todayISO, toArgTime } from "@/lib/domain/date"
 
 const memoByDate = cache((userId: string, date: string) => listAttendanceByDate(userId, date))
 
@@ -19,10 +19,12 @@ export async function getAttendanceLog(userId: string, memberId: string): Promis
   return listAttendanceByMember(userId, memberId)
 }
 
+export async function getAttendanceByDate(userId: string, date: string): Promise<Attendance[]> {
+  return memoByDate(userId, date)
+}
+
 export async function mark(userId: string, memberId: string): Promise<void> {
-  const now = new Date()
-  const markedAt = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`
-  await markAttendance(userId, memberId, todayISO(), markedAt)
+  await markAttendance(userId, memberId, todayISO(), toArgTime(new Date()))
 }
 
 export async function unmark(userId: string, memberId: string): Promise<void> {

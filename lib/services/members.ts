@@ -2,6 +2,7 @@
 import { cache } from "react"
 
 import type { Member, MemberStatus } from "@/lib/domain"
+import { todayISO } from "@/lib/domain/date"
 import { getMemberById as getMemberByIdRepo, insertMember, listMembers, searchMembers, updateMember } from "@/lib/db/repos/members"
 
 const memoList = cache((userId: string) => listMembers(userId))
@@ -14,7 +15,7 @@ export async function getMembers(userId: string): Promise<Member[]> { return mem
 export async function getMember(userId: string, id: string): Promise<Member | undefined> { return memoById(userId, id) }
 
 export async function createMember(userId: string, input: CreateMemberInput): Promise<Member> {
-  return insertMember(userId, { ...input, status: input.status ?? "active", role: input.role || "", joinedAt: input.joinedAt || new Date().toISOString().slice(0, 10) })
+  return insertMember(userId, { ...input, status: input.status ?? "active", role: input.role || "", joinedAt: input.joinedAt || todayISO() })
 }
 
 export async function editMember(userId: string, id: string, patch: UpdateMemberInput): Promise<Member | undefined> {

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
-import { PencilIcon, Trash2Icon } from "lucide-react"
+import { CopyIcon, PencilIcon, Trash2Icon } from "lucide-react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { deleteTaskAction } from "@/lib/actions/tasks"
 import type { Task } from "@/lib/domain"
+import { formatArgDateTime, isISODate } from "@/lib/domain/date"
 
 type TaskItemProps = {
   task: Task
@@ -25,6 +26,9 @@ type TaskItemProps = {
 
 /**
  * One informational task with inline edit and delete (with confirmation).
+ * New tasks show the creation date AND time (Argentina); older tasks that
+ * only stored a date show just the date. The description can be copied with
+ * one click.
  */
 export function TaskItem({ task }: TaskItemProps) {
   const [editing, setEditing] = useState(false)
@@ -43,6 +47,18 @@ export function TaskItem({ task }: TaskItemProps) {
     })
   }
 
+  async function copyDescription() {
+    if (!task.description) {
+      return
+    }
+    try {
+      await navigator.clipboard.writeText(task.description)
+      toast.success("Descripción copiada")
+    } catch {
+      toast.error("No se pudo copiar la descripción")
+    }
+  }
+
   if (editing) {
     return (
       <div className="py-3">
@@ -59,15 +75,22 @@ export function TaskItem({ task }: TaskItemProps) {
           <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">{task.description}</p>
         ) : null}
         <p className="mt-1 text-xs text-muted-foreground">
-          Creada el{" "}
-          {new Date(`${task.createdAt}T00:00:00`).toLocaleDateString("es-AR", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          })}
+          Creada el {formatCreatedAt(task.createdAt)}
         </p>
       </div>
       <div className="flex shrink-0 items-center gap-1">
+        {task.description ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label="Copiar descripción"
+            title="Copiar descripción"
+            onClick={copyDescription}
+          >
+            <CopyIcon className="size-4" aria-hidden />
+          </Button>
+        ) : null}
         <Button
           type="button"
           variant="ghost"
@@ -107,4 +130,16 @@ export function TaskItem({ task }: TaskItemProps) {
       </AlertDialog>
     </li>
   )
+}
+
+/** "5 ago 2026" for old date-only tasks; "05/08/2026, 09:15" for new ISO ones. */
+function formatCreatedAt(createdAt: string): string {
+  if (isISODate(createdAt)) {
+    return new Date(`${createdAt}T00:00:00`).toLocaleDateString("es-AR", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    })
+  }
+  return formatArgDateTime(createdAt)
 }

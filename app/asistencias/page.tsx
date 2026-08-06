@@ -15,7 +15,9 @@ import {
 } from "@/components/ui/empty"
 import { requireAuth } from "@/lib/auth-guard"
 import { getMembers } from "@/lib/services/members"
-import { getAttendanceLog } from "@/lib/services/attendance"
+import { getAttendanceByDate } from "@/lib/services/attendance"
+import { AttendanceFilter } from "@/components/feature/attendance-filter"
+import { isISODate, todayISO } from "@/lib/domain/date"
 
 export const metadata: Metadata = {
   title: "Asistencias",
@@ -24,13 +26,16 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
 
-export default async function AttendancePage() {
+type AttendancePageProps = {
+  searchParams: Promise<{ date?: string | string[] }>
+}
+
+export default async function AttendancePage({ searchParams }: AttendancePageProps) {
+  const { date: dateParam } = await searchParams
+  const selectedDate = typeof dateParam === "string" && isISODate(dateParam) ? dateParam : todayISO()
   const userId = await requireAuth()
   const members = await getMembers(userId)
-  const allAttendanceLogs = await Promise.all(
-    members.map((m) => getAttendanceLog(userId, m.id)),
-  )
-  const log = allAttendanceLogs.flat()
+  const marks = await getAttendanceByDate(userId, selectedDate)
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6">
@@ -48,23 +53,32 @@ export default async function AttendancePage() {
 
       <section aria-labelledby="attendance-log-heading">
         <AppleCard>
-          <AppleCardTitle id="attendance-log-heading">Registro de asistencias</AppleCardTitle>
-          {log.length === 0 ? (
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <AppleCardTitle id="attendance-log-heading">
+              Registro de asistencias — {selectedDate === todayISO() ? "hoy" : selectedDate}
+            </AppleCardTitle>
+            <AttendanceFilter date={selectedDate} />
+          </div>
+          {marks.length === 0 ? (
             <Empty>
               <EmptyHeader>
                 <EmptyMedia variant="icon">
                   <FingerprintIcon />
                 </EmptyMedia>
-                <EmptyTitle>Sin marcas todavía</EmptyTitle>
+                <EmptyTitle>
+                  {selectedDate === todayISO() ? "Sin marcas hoy" : `Sin marcas el ${selectedDate}`}
+                </EmptyTitle>
               </EmptyHeader>
               <EmptyContent>
                 <EmptyDescription>
-                  Cargá la primera asistencia con el formulario de arriba.
+                  {selectedDate === todayISO()
+                    ? "Cargá la primera asistencia con el formulario de arriba."
+                    : "No hay registros para ese día — cambiá la fecha para ver otro día."}
                 </EmptyDescription>
               </EmptyContent>
             </Empty>
           ) : (
-            <AttendanceLog members={members} marks={log} />
+            <AttendanceLog members={members} marks={marks} />
           )}
         </AppleCard>
       </section>

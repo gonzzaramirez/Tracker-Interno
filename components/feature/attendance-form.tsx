@@ -15,11 +15,10 @@ import {
 } from "@/components/ui/select"
 import { markAttendanceAction, unmarkAttendanceAction } from "@/lib/actions/attendance"
 import type { Attendance, Member } from "@/lib/domain"
-import { todayISO } from "@/lib/domain/date"
+import { todayISO, toArgTime } from "@/lib/domain/date"
 
 function currentTime(): string {
-  const now = new Date()
-  return `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`
+  return toArgTime(new Date())
 }
 
 type AttendanceFormProps = {
