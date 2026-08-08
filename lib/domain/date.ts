@@ -30,6 +30,31 @@ const argTimeFormatter = new Intl.DateTimeFormat("en-GB", {
   hour12: false,
 })
 
+const argHourFormatter = new Intl.DateTimeFormat("en-US", {
+  timeZone: APP_TIMEZONE,
+  hour: "2-digit",
+  hour12: false,
+  hourCycle: "h23",
+})
+
+const argWeekdayFormatter = new Intl.DateTimeFormat("en-US", {
+  timeZone: APP_TIMEZONE,
+  weekday: "short",
+})
+
+/**
+ * Horario laboral argentino: la hoja de Google solo se actualiza de lunes a
+ * viernes entre las 09:00 y las 18:00 (America/Argentina/Buenos_Aires). El
+ * cron de sync no debe pegarle a la hoja fuera de esa ventana.
+ */
+export const WORK_HOURS = { startHour: 9, endHour: 18 } as const
+
+/**
+ * Días de fin de semana considerados laborables (0 = lunes … 6 = domingo).
+ * Si el equipo trabaja los sábados, agregá 5 acá y isWorkTime lo respeta.
+ */
+export const WORK_WEEKEND_DAYS: ReadonlyArray<number> = []
+
 /** Format a Date as an ISO YYYY-MM-DD value in local time. */
 export function isoDate(date: Date): string {
   const year = date.getFullYear()
@@ -46,6 +71,32 @@ export function todayISO(): string {
 /** Wall-clock time (HH:MM, 24h) in Argentina time. */
 export function toArgTime(date: Date): string {
   return argTimeFormatter.format(date)
+}
+
+/** Current hour (0-23) in Argentina time. */
+export function toArgHour(date: Date): number {
+  return Number(argHourFormatter.format(date))
+}
+
+/** Current weekday in Argentina time: 0 = Monday … 6 = Sunday. */
+export function toArgWeekday(date: Date): number {
+  const label = argWeekdayFormatter.format(date)
+  const WEEKDAY_LABELS: Record<string, number> = { Mon: 0, Tue: 1, Wed: 2, Thu: 3, Fri: 4, Sat: 5, Sun: 6 }
+  return WEEKDAY_LABELS[label] ?? 0
+}
+
+/**
+ * Whether `date` falls inside the Argentine work schedule: Monday–Friday
+ * (plus any WORK_WEEKEND_DAYS) with the local hour in [startHour, endHour)
+ * — 09:00 inclusive, 18:00 exclusive.
+ */
+export function isWorkTime(date: Date): boolean {
+  const weekday = toArgWeekday(date)
+  if (weekday >= 5 && !WORK_WEEKEND_DAYS.includes(weekday)) {
+    return false
+  }
+  const hour = toArgHour(date)
+  return hour >= WORK_HOURS.startHour && hour < WORK_HOURS.endHour
 }
 
 /** Format an ISO timestamp as a short "DD/MM, HH:MM" in Argentina time. */

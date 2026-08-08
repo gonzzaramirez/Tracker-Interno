@@ -357,6 +357,12 @@ export async function syncTaskSheet(userId: string, taskId: string): Promise<Tas
     }
 
     // Upsert per-result stats with elapsed time.
+    //
+    // Los conteos son ABSOLUTOS por corrida: cada sync sobreescribe el valor
+    // anterior para (tarea, miembro, fecha, resultado) sin comparar. Si el
+    // cliente borra filas de la hoja (ej: pepito bajó de 100 a 40 not_found
+    // porque se repasan), los conteos simplemente bajan — nunca es un error.
+    // El único aviso no fatal es countedRows === 0 (ninguna fila contada).
     for (const [key, count] of counts) {
       const [memberId, date, result] = key.split("|")
       await upsertDayStat(taskId, memberId, date, result as SheetResult, count, timeStats(elapsedByKey.get(key)))
