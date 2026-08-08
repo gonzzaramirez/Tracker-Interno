@@ -12,8 +12,23 @@ export type NewUser = {
   passwordHash: string
 }
 
+export type SupervisorOverview = {
+  id: string
+  username: string
+  celula: string | null
+  createdAt: string
+  memberCount: number
+  activeMemberCount: number
+}
+
 function toUser(row: UserRow): User {
-  return { id: row.id, username: row.username, createdAt: row.created_at }
+  return {
+    id: row.id,
+    username: row.username,
+    role: row.role,
+    celula: row.celula,
+    createdAt: row.created_at,
+  }
 }
 
 export async function getUserById(id: string): Promise<User | undefined> {
@@ -37,4 +52,29 @@ export async function insertUser(input: NewUser): Promise<User> {
 export async function updatePassword(id: string, newHash: string): Promise<boolean> {
   const changes = await mutate("UPDATE users SET password_hash = ? WHERE id = ?", [newHash, id])
   return changes > 0
+}
+
+/** Cell name for the current supervisor (null clears it). */
+export async function updateCelula(id: string, celula: string | null): Promise<boolean> {
+  const changes = await mutate("UPDATE users SET celula = ? WHERE id = ?", [celula, id])
+  return changes > 0
+}
+
+/**
+ * Cross-tenant listing for the PM: every supervisor with their cell name and
+ * roster size. The first read path in the codebase that intentionally does
+ * NOT filter by user_id — only callable behind requirePm().
+ */
+export async function listSupervisorsForPm(): Promise<SupervisorOverview[]> {
+  return query<SupervisorOverview>(
+    `SELECT u.id,
+            u.username,
+            u.celula,
+            u.created_at AS createdAt,
+            (SELECT COUNT(*) FROM members m WHERE m.user_id = u.id) AS memberCount,
+            (SELECT COUNT(*) FROM members m WHERE m.user_id = u.id AND m.status = 'active') AS activeMemberCount
+     FROM users u
+     WHERE u.role = 'supervisor'
+     ORDER BY u.username COLLATE NOCASE`,
+  )
 }

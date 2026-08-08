@@ -25,10 +25,68 @@ export type TimeOffType = (typeof TIME_OFF_TYPES)[number]
 export const TIME_OFF_STATUSES = ["pending", "approved", "rejected"] as const
 export type TimeOffStatus = (typeof TIME_OFF_STATUSES)[number]
 
+export const USER_ROLES = ["supervisor", "pm"] as const
+export type UserRole = (typeof USER_ROLES)[number]
+
 export type UserRow = {
   id: string
   username: string
   password_hash: string
+  role: UserRole
+  celula: string | null
+  created_at: string
+}
+
+export const SHEET_RESULTS = ["done", "hard_match", "soft_match", "not_found", "other"] as const
+export type SheetResult = (typeof SHEET_RESULTS)[number]
+
+export const SHEET_GOAL_TYPES = ["daily", "weekly", "monthly"] as const
+export type SheetGoalType = (typeof SHEET_GOAL_TYPES)[number]
+
+export type TaskSheetMemberRow = {
+  task_id: string
+  member_id: string
+  sheet_user: string
+}
+
+export type TaskDayStatRow = {
+  task_id: string
+  member_id: string
+  date: string
+  result: SheetResult
+  count: number
+  avg_elapsed_seconds: number | null
+  min_elapsed_seconds: number | null
+  max_elapsed_seconds: number | null
+  rows_with_elapsed: number
+  total_gap_seconds: number
+  max_gap_seconds: number
+  gap_count: number
+  coverage_start: string | null
+  coverage_end: string | null
+}
+
+export type TaskSheetRowRow = {
+  id: number
+  task_id: string
+  member_id: string
+  date: string
+  result: string
+  timestamp_start: string | null
+  timestamp_end: string | null
+  elapsed_seconds: number | null
+  sort_order: number
+}
+
+export type TaskGoalRow = {
+  id: string
+  user_id: string
+  task_id: string
+  name: string
+  target: number
+  type: SheetGoalType
+  status: "active" | "archived"
+  member_ids: string
   created_at: string
 }
 
@@ -54,6 +112,10 @@ export type TaskRow = {
   priority: TaskPriority
   status: TaskStatus
   due_date: string | null
+  completed_at: string | null
+  sheet_url: string | null
+  last_synced_at: string | null
+  last_sync_error: string | null
   created_at: string
 }
 

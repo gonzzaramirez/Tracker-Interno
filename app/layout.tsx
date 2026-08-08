@@ -21,13 +21,18 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const userId = await getCurrentUserId()
 
   let username = "Usuario"
+  let role: "supervisor" | "pm" = "supervisor"
   let members: Awaited<ReturnType<typeof getMembers>> = []
   let tasks: Awaited<ReturnType<typeof getAllTasks>> = []
 
   if (userId) {
     const user = await getUserById(userId)
     username = user?.username ?? "Usuario"
-    ;[members, tasks] = await Promise.all([getMembers(userId), getAllTasks(userId)])
+    role = user?.role ?? "supervisor"
+    // The PM has no roster of their own — skip preloading tenant data.
+    if (user?.role !== "pm") {
+      ;[members, tasks] = await Promise.all([getMembers(userId), getAllTasks(userId)])
+    }
   }
 
   return (
@@ -39,7 +44,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-lg focus:bg-background focus:px-3 focus:py-2 focus:text-sm focus:font-medium focus:text-foreground focus:ring-2 focus:ring-ring">
                 Saltar al contenido principal
               </a>
-              <AppNav username={username} />
+              <AppNav username={username} role={role} />
               <CommandPaletteProvider members={members} tasks={tasks} />
             </>
           ) : null}

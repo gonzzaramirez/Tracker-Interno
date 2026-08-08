@@ -13,7 +13,9 @@ import {
 } from "@/components/ui/empty"
 import { AppleCard, AppleCardTitle } from "@/components/feature/card"
 import { requireAuth } from "@/lib/auth-guard"
+import { getMembers } from "@/lib/services/members"
 import { getAllTasks } from "@/lib/services/tasks"
+import { getTaskElapsedSummary, listTaskSheetMembers } from "@/lib/db/repos/task-sheets"
 
 export const metadata = {
   title: "Tareas",
@@ -24,19 +26,31 @@ export const runtime = "nodejs"
 
 export default async function TasksPage() {
   const userId = await requireAuth()
-  const tasks = await getAllTasks(userId)
+  const [tasks, members] = await Promise.all([getAllTasks(userId), getMembers(userId)])
+
+  const sheetLinks = new Map<string, Awaited<ReturnType<typeof listTaskSheetMembers>>>()
+  const elapsedSummaries = new Map<string, number | null>()
+  for (const task of tasks) {
+    if (task.sheetUrl) {
+      const links = await listTaskSheetMembers(task.id)
+      sheetLinks.set(task.id, links)
+      const memberIds = links.map((l) => l.memberId)
+      const summary = await getTaskElapsedSummary(task.id, memberIds)
+      elapsedSummaries.set(task.id, summary.avgElapsedSeconds)
+    }
+  }
 
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Referencia"
+        eyebrow="Operación"
         title="Tareas"
-        description="Listado informativo de tareas — sin asignaciones, para tenerlas a mano al registrar seguimientos."
+        description="Tareas con planilla de Google Sheets vinculada: pegá la URL, mapeá tus miembros y los conteos se importan solos."
       />
 
       <AppleCard>
         <AppleCardTitle>Nueva tarea</AppleCardTitle>
-        <TaskForm />
+        <TaskForm members={members} />
       </AppleCard>
 
       <AppleCard>
@@ -51,14 +65,14 @@ export default async function TasksPage() {
             </EmptyHeader>
             <EmptyContent>
               <EmptyDescription>
-                Creá la primera tarea arriba y aparecerá acá.
+                Creá la primera tarea arriba — si le pegás una planilla, el sistema importa los conteos automáticamente.
               </EmptyDescription>
             </EmptyContent>
           </Empty>
         ) : (
           <ul className="space-y-3">
             {tasks.map((task) => (
-              <TaskItem key={task.id} task={task} />
+              <TaskItem key={task.id} task={task} members={members} taskSheetMembers={sheetLinks.get(task.id)} avgElapsedSeconds={elapsedSummaries.get(task.id)} />
             ))}
           </ul>
         )}

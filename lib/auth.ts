@@ -13,11 +13,23 @@ export { hashPassword, verifyPassword } from "./auth-password"
 // ---------------------------------------------------------------------------
 
 const SESSION_COOKIE = "session"
-const SESSION_SECRET =
-  process.env.SESSION_SECRET || "tracker-dev-secret-change-in-production"
+
+/**
+ * A hardcoded fallback secret would let anyone forge session cookies for any
+ * user — including the cross-tenant PM account — so production fails fast
+ * instead of silently trusting a public key. Lazy on purpose: `next build`
+ * also runs with NODE_ENV=production, and building must not require env vars
+ * that only the deployed runtime needs.
+ */
+function getSessionSecret(): string {
+  if (process.env.NODE_ENV === "production" && !process.env.SESSION_SECRET) {
+    throw new Error("SESSION_SECRET must be set in production.")
+  }
+  return process.env.SESSION_SECRET || "tracker-dev-secret-change-in-production"
+}
 
 function sign(payload: string): string {
-  const hmac = createHmac("sha256", SESSION_SECRET)
+  const hmac = createHmac("sha256", getSessionSecret())
   hmac.update(payload)
   return `${payload}.${hmac.digest("hex")}`
 }
@@ -27,6 +39,9 @@ function verify(token: string): string | null {
   if (lastDot === -1) return null
   const payload = token.slice(0, lastDot)
   const expected = sign(payload)
+  // timingSafeEqual throws on length mismatch — reject malformed cookies
+  // instead of 500-ing every request.
+  if (token.length !== expected.length) return null
   return timingSafeEqual(Buffer.from(token), Buffer.from(expected)) ? payload : null
 }
 

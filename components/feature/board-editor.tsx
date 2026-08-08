@@ -36,16 +36,19 @@ type BoardEditorProps = {
 }
 
 /**
- * Cheap scene signature (element ids + versions + background + file count).
+ * Cheap scene signature (element ids + versions + background + file ids).
  * Excalidraw's onChange fires on pan/zoom/selection — this lets us skip
- * saves when nothing real changed.
+ * saves when nothing real changed. File ids (sorted, not just a count) are
+ * included so adding, removing, or replacing an image always counts as a
+ * change (count alone misses delete + paste pairs that keep the same size).
  */
 function sceneSignature(scene: BoardScene): string {
   const elements = (scene.elements ?? []) as Array<{ id?: unknown; version?: unknown }>
   const parts = elements.map((e) => `${String(e.id)}:${String(e.version)}`).join("|")
   const viewBg = (scene.appState as { viewBackgroundColor?: unknown } | undefined)?.viewBackgroundColor
-  const fileCount = scene.files && typeof scene.files === "object" ? Object.keys(scene.files).length : 0
-  return `${parts}|bg:${String(viewBg)}|files:${fileCount}`
+  const fileIds =
+    scene.files && typeof scene.files === "object" ? Object.keys(scene.files).sort().join(",") : ""
+  return `${parts}|bg:${String(viewBg)}|files:${fileIds}`
 }
 
 /**
@@ -64,20 +67,29 @@ export function BoardEditor({ boardId, boardName, initialScene }: BoardEditorPro
 
   // Restore the persisted scene with excalidraw's restore() util (validates
   // and repairs elements so a corrupt payload can never crash the editor).
-  // The theme is forced dark, so the stored light-default background is
-  // replaced with Excalidraw's dark canvas color.
+  // Files MUST round-trip too: image elements only reference a fileId, the
+  // actual bytes (base64 dataURLs) live in `files`. Without them pasted
+  // images vanish after reload — and the next autosave would overwrite the
+  // stored dataURLs with an empty map, losing them forever.
+  //
+  // The theme is forced dark, but Excalidraw's dark mode does NOT paint a
+  // dark canvas: it paints appState.viewBackgroundColor (default white) and
+  // applies an invert(93%) CSS filter on the canvas, turning white into the
+  // dark canvas color. So the stored raw color round-trips as-is. The old
+  // "#1e1e1e" forced value was a hack that renders as LIGHT gray under that
+  // filter — migrate it to undefined (falls back to white → dark canvas).
   useEffect(() => {
     let cancelled = false
     ;(async () => {
       const { restore } = await import("@excalidraw/excalidraw")
       const storedBg = (initialScene.appState as { viewBackgroundColor?: unknown } | undefined)
         ?.viewBackgroundColor
-      const viewBackgroundColor =
-        typeof storedBg === "string" && storedBg !== "#ffffff" ? storedBg : "#1e1e1e"
+      const viewBackgroundColor = storedBg === "#1e1e1e" ? undefined : storedBg
       const restored = await restore(
         {
           elements: initialScene.elements,
           appState: { ...initialScene.appState, viewBackgroundColor },
+          files: initialScene.files,
         } as unknown as Parameters<typeof restore>[0],
         null,
         null,

@@ -10,7 +10,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "db:reset": "tsx scripts/db-reset.ts"
+    "db:reset": "tsx scripts/db-reset.ts",
+    "db:seed": "tsx scripts/db-seed.ts",
+    "db:clear-tasks": "tsx scripts/db-clear-tasks.ts",
+    "sheet:peek": "tsx scripts/sheet-peek.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
@@ -27,6 +30,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
+    "csv-parse": "^7.0.2",
     "date-fns": "^4.4.0",
     "embla-carousel-react": "^8.6.0",
     "input-otp": "^1.4.2",

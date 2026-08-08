@@ -37,6 +37,13 @@ const DEFAULT_USER = {
   password: "gonza",
 }
 
+/** Dedicated Project Manager account (cross-tenant, read-only views). */
+const DEFAULT_PM = {
+  id: "user-admin",
+  username: "admin",
+  password: "admin",
+}
+
 async function ensureDefaultUser(client: Client): Promise<void> {
   const result = await client.execute("SELECT COUNT(*) AS n FROM users")
   const n = Number((result.rows[0] as unknown as { n: number }).n)
@@ -48,11 +55,33 @@ async function ensureDefaultUser(client: Client): Promise<void> {
   })
 }
 
+/**
+ * Idempotent PM seed. The PM is the first privileged cross-tenant account,
+ * so it is NEVER auto-seeded in production with default credentials:
+ * production must opt in with SEED_DEFAULT_PM=true and should provide a
+ * real password via PM_INITIAL_PASSWORD. Dev seeds pm/pm for convenience.
+ */
+async function ensureDefaultPm(client: Client): Promise<void> {
+  if (process.env.NODE_ENV === "production" && process.env.SEED_DEFAULT_PM !== "true") return
+  const password = process.env.PM_INITIAL_PASSWORD || DEFAULT_PM.password
+  if (password === DEFAULT_PM.password) {
+    console.warn(
+      "[tracker] PM account seeded with the DEFAULT password — set PM_INITIAL_PASSWORD (and change it after first login).",
+    )
+  }
+  const hash = hashPassword(password)
+  await client.execute({
+    sql: "INSERT INTO users (id, username, password_hash, role, created_at) VALUES (?, ?, ?, 'pm', ?) ON CONFLICT (username) DO NOTHING",
+    args: [DEFAULT_PM.id, DEFAULT_PM.username, hash, new Date().toISOString()],
+  })
+}
+
 async function init(): Promise<Client> {
   const client = createClient(clientConfig())
   try {
     await migrate(client)
     await ensureDefaultUser(client)
+    await ensureDefaultPm(client)
     return client
   } catch (error) {
     client.close()

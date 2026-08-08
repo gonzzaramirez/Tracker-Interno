@@ -8,6 +8,7 @@ import {
   LayoutDashboardIcon,
   MessageSquareTextIcon,
   SearchIcon,
+  TargetIcon,
   UsersIcon,
 } from "lucide-react"
 
@@ -26,6 +27,7 @@ const NAV_ENTRIES = [
   { id: "nav-members", href: "/members", label: "Miembros", icon: UsersIcon },
   { id: "nav-tracking", href: "/tracking", label: "Seguimiento", icon: MessageSquareTextIcon },
   { id: "nav-tasks", href: "/tasks", label: "Tareas", icon: CheckSquareIcon },
+  { id: "nav-goals", href: "/goals", label: "Objetivos", icon: TargetIcon },
   { id: "nav-calendar", href: "/calendar", label: "Calendario", icon: CalendarDaysIcon },
 ] as const
 

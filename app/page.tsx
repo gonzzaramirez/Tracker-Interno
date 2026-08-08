@@ -1,6 +1,7 @@
 import {
   MessageSquareTextIcon,
   StarIcon,
+  TargetIcon,
   UsersIcon,
 } from "lucide-react"
 
@@ -20,6 +21,7 @@ import {
 import { getMembers } from "@/lib/services/members"
 import { getMemberTrackingSummaries, getTrackingMetrics } from "@/lib/services/tracking"
 import { getPresentToday } from "@/lib/services/attendance"
+import { listTaskGoals } from "@/lib/db/repos/task-sheets"
 
 export const metadata = {
   title: "Panel",
@@ -29,15 +31,23 @@ export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
 
 import { requireAuth } from "@/lib/auth-guard"
+import { getUserById } from "@/lib/db/repos/users"
+import { redirect } from "next/navigation"
 
 export default async function DashboardPage() {
   const userId = await requireAuth()
-  const [members, metrics] = await Promise.all([
+  const user = await getUserById(userId)
+  // The PM lands on their supervisor list — the tenant panel is meaningless
+  // for an account with no roster of its own.
+  if (user?.role === "pm") redirect("/pm")
+  const [members, metrics, allSheetGoals] = await Promise.all([
     getMembers(userId),
     getTrackingMetrics(userId),
+    listTaskGoals(userId),
   ])
   const summaries = await getMemberTrackingSummaries(userId, members)
   const presentToday = await getPresentToday(userId, members)
+  const activeSheetGoals = allSheetGoals.filter((goal) => goal.status === "active").length
 
   const averageLabel =
     metrics.averageRating === null ? "Sin registros" : metrics.averageRating.toFixed(1)
@@ -74,6 +84,14 @@ export default async function DashboardPage() {
           icon={StarIcon}
           tone="green"
           href="/tracking"
+        />
+        <MetricCard
+          label="Objetivos"
+          value={activeSheetGoals}
+          hint="Activos en planillas"
+          icon={TargetIcon}
+          tone="amber"
+          href="/goals"
         />
       </div>
 

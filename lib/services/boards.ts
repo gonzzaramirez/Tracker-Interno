@@ -14,8 +14,8 @@ import {
 
 const memoList = cache((userId: string) => listBoards(userId))
 
-/** Max serialized scene size to protect the DB (8 MB). */
-const MAX_SCENE_BYTES = 8 * 1024 * 1024
+/** Max serialized scene size to protect the DB (32 MB — base64 images are heavy). */
+const MAX_SCENE_BYTES = 32 * 1024 * 1024
 
 function assertName(name: string): string {
   const trimmed = name.trim()

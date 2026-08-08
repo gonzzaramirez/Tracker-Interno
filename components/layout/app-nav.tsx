@@ -11,12 +11,14 @@ import {
   LayoutGridIcon,
   LogOutIcon,
   MessageSquareTextIcon,
+  TargetIcon,
   UsersIcon,
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { signOutAction } from "@/lib/actions/auth"
 import { Button } from "@/components/ui/button"
+import type { UserRole } from "@/lib/domain"
 
 const NAV_ITEMS = [
   { href: "/", label: "Panel", icon: LayoutDashboardIcon, exact: true },
@@ -25,15 +27,22 @@ const NAV_ITEMS = [
   { href: "/tracking", label: "Seguimiento", icon: MessageSquareTextIcon },
   { href: "/boards", label: "Pizarras", icon: LayoutGridIcon },
   { href: "/tasks", label: "Tareas", icon: CheckSquareIcon },
+  { href: "/goals", label: "Objetivos", icon: TargetIcon },
   { href: "/calendar", label: "Calendario", icon: CalendarDaysIcon },
+] as const
+
+/** The PM account has a single purpose: read every supervisor's team. */
+const PM_NAV_ITEMS = [
+  { href: "/pm", label: "Supervisores", icon: UsersIcon, exact: true },
 ] as const
 
 function isActive(pathname: string, href: string, exact?: boolean) {
   return exact ? pathname === href : pathname === href || pathname.startsWith(`${href}/`)
 }
 
-export function AppNav({ username }: { username: string }) {
+export function AppNav({ username, role }: { username: string; role: UserRole }) {
   const pathname = usePathname()
+  const items = role === "pm" ? PM_NAV_ITEMS : NAV_ITEMS
 
   return (
     <header className="sticky top-0 z-40 border-b border-foreground/5 bg-background/70 backdrop-blur-xl">
@@ -45,7 +54,7 @@ export function AppNav({ username }: { username: string }) {
           <span className="hidden sm:inline">Tracker</span>
         </Link>
         <div className="flex items-center gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {NAV_ITEMS.map((item) => {
+          {items.map((item) => {
             const active = isActive(pathname, item.href, "exact" in item && item.exact)
             return (
               <Link key={item.href} href={item.href} aria-label={item.label} aria-current={active ? "page" : undefined}
